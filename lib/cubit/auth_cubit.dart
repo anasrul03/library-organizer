@@ -60,10 +60,12 @@ class AuthRepo extends Cubit<AuthState> {
     // }
     // print(_emailController.text.trim());
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      var user = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      emit(state.copyWith(user: user.user));
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.green,
         content: Text("Successfully Logged as " + email),
