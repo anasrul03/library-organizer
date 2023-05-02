@@ -1,15 +1,26 @@
-// ignore_for_file: prefer_interpolation_to_compose_strings, prefer_const_constructors, avoid_print, use_build_context_synchronously
-
-import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:meta/meta.dart';
-import '../main.dart';
-part 'auth_state.dart';
 
-class AuthRepo {
-  // AuthRepo() : super(Null);
+import '../main.dart';
+import 'auth_state.dart';
+
+class AuthRepo extends Cubit<AuthState> {
+  AuthRepo() : super(const AuthState()) {
+    checkSignin();
+  }
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  Future<void> checkSignin() async {
+    final User? user = _auth.currentUser;
+
+    if (user != null) {
+      emit(state.copyWith(user: user));
+    }
+  }
 
   Future signUp(BuildContext context, String email, String password) async {
     print("Running Firebase Create user");

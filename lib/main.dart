@@ -65,7 +65,9 @@ class _MyAppState extends State<MyApp> {
           debugShowCheckedModeBanner: false,
           theme: ThemeData(primaryColor: Colors.indigo),
           title: 'Flutter Demo',
-          home: const HomePage(),
+          home: MyHomePage(
+            title: 'Home',
+          ),
         ),
       ),
     );
@@ -84,7 +86,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   setUserId(String? userId) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    // Try reading data from the 'action' key. If it doesn't exist, returns null.
+    //   // Try reading data from the 'action' key. If it doesn't exist, returns null.
     prefs.setString('userId', userId!);
   }
 
@@ -105,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
             // log(snapshot.data!.uid);
             // Store userId in local Phone Storage
-            setUserId(snapshot.data!.uid);
+            // setUserId(snapshot.data!.uid);
             return HomePage();
           } else {
             print("Re-directing to AuthPage");
