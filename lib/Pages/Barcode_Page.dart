@@ -12,6 +12,7 @@ class BarcodePage extends StatefulWidget {
 
 class BarcodePageState extends State<BarcodePage> {
   String barcode = '';
+  TextEditingController _isbnController = TextEditingController();
   String bookTitle = '';
   String bookDescription = '';
   String bookImage = '';
@@ -53,32 +54,98 @@ class BarcodePageState extends State<BarcodePage> {
     });
 
     if (barcodeScanRes != '-1') {
-      await navigateToBookDetailsPage(barcodeScanRes);
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BookDetailsPage(isbn: barcodeScanRes),
+        ),
+      ).then((value) {
+        if (value != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text('Error: Please scan again or input ISBN no.'),
+              ),
+              backgroundColor: Colors.indigo,
+            ),
+          );
+        }
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Text('Error: Please scan again or input ISBN no.'),
+          ),
+          backgroundColor: Colors.indigo,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
-          child: Column(
-        children: [
-          const Spacer(),
-          CachedNetworkImage(
+        child: Column(
+          children: [
+            const Spacer(),
+            CachedNetworkImage(
               imageUrl:
-                  'https://media.tenor.com/8E3SIU76kHgAAAAC/barcode-scan.gif'),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-            onPressed: _scanBarcode,
-            child: const Text('Start Barcode scan'),
-          ),
-          const ElevatedButton(
-            onPressed: null,
-            child: Text('Search ISBN No.'),
-          ),
-          const Spacer()
-        ],
-      )),
+                  'https://media.tenor.com/8E3SIU76kHgAAAAC/barcode-scan.gif',
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo,
+              ),
+              onPressed: _scanBarcode,
+              child: const Text('Start Barcode scan'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigoAccent,
+              ),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Search ISBN No.'),
+                      content: TextField(
+                        controller: _isbnController,
+                        decoration: const InputDecoration(
+                          hintText: 'Enter ISBN No.',
+                        ),
+                      ),
+                      actions: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            String isbn = _isbnController.text.trim();
+                            navigateToBookDetailsPage(isbn);
+                          },
+                          child: const Text('Search'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: const Text('Search ISBN No.'),
+            ),
+            const Spacer(),
+          ],
+        ),
+      ),
     );
   }
 }

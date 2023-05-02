@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -13,6 +14,7 @@ class _BookSearchPageState extends State<BookSearchPage> {
   TextEditingController _searchController = TextEditingController();
   String _searchTerm = '';
   List<dynamic> _searchResults = [];
+  FocusNode _searchFocusNode = FocusNode();
 
   Future<void> _searchBooks(String searchTerm) async {
     String apiUrl =
@@ -27,6 +29,7 @@ class _BookSearchPageState extends State<BookSearchPage> {
   @override
   void initState() {
     super.initState();
+    _searchFocusNode.requestFocus();
   }
 
   @override
@@ -38,9 +41,12 @@ class _BookSearchPageState extends State<BookSearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.indigo,
         title: TextField(
+          style: const TextStyle(color: Colors.white),
+          focusNode: _searchFocusNode,
           controller: _searchController,
           decoration: const InputDecoration(
             hintText: 'Search Books...',
@@ -60,8 +66,25 @@ class _BookSearchPageState extends State<BookSearchPage> {
         ),
       ),
       body: _searchResults.isEmpty
-          ? const Center(
-              child: Text('No items found'),
+          ? Center(
+              child: Column(
+                children: [
+                  const Spacer(),
+                  CachedNetworkImage(
+                    imageUrl:
+                        'https://cdn.dribbble.com/users/1785190/screenshots/3906047/search.gif',
+                  ),
+                  const Text(
+                    'Input search query above!',
+                    style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  const Spacer(),
+                  const Spacer()
+                ],
+              ),
             )
           : ListView.builder(
               itemCount: _searchResults.length,
@@ -78,12 +101,27 @@ class _BookSearchPageState extends State<BookSearchPage> {
                               isbn: book['industryIdentifiers'][0]
                                   ['identifier']),
                         ),
-                      );
+                      ).then((value) {
+                        if (value != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Text(value),
+                              ),
+                              backgroundColor: Colors.indigo,
+                            ),
+                          );
+                        }
+                      });
                     },
                     child: ListTile(
-                      leading: book['imageLinks'] != null
-                          ? Image.network(book['imageLinks']['thumbnail'])
-                          : Container(),
+                      leading: SizedBox(
+                        width: 50,
+                        child: book['imageLinks'] != null
+                            ? Image.network(book['imageLinks']['thumbnail'])
+                            : Container(),
+                      ),
                       title: Text(book['title'] ?? ''),
                     ),
                   ),

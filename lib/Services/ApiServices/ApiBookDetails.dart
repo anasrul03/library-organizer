@@ -79,8 +79,8 @@ class ApiBookDetails {
   factory ApiBookDetails.fromJson(String str) =>
       ApiBookDetails.fromMap(json.decode(str));
 
-  ApiBookDetails.fromMap(Map<String, dynamic> json) {
-    items = List.from(json['items']).map((e) => Items.fromJson(e)).toList();
+  ApiBookDetails.fromMap(Map<String, dynamic>? json) {
+    items = List.from(json?['items']).map((e) => Items.fromJson(e)).toList();
   }
 
   Map<String, dynamic> toJson() {
@@ -98,9 +98,9 @@ class Items {
   late final String id;
   late final VolumeInfo volumeInfo;
 
-  Items.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    volumeInfo = VolumeInfo.fromJson(json['volumeInfo']);
+  Items.fromJson(Map<String, dynamic>? json) {
+    id = json?['id'] ?? '';
+    volumeInfo = VolumeInfo.fromJson(json?['volumeInfo'] ?? []);
   }
 
   Map<String, dynamic> toJson() {
@@ -134,26 +134,26 @@ class VolumeInfo {
   late final List<IndustryIdentifiers> industryIdentifiers;
   late final int pageCount;
   late final List<String> categories;
-  late final int? averageRating;
+  late final dynamic averageRating;
   late final String maturityRating;
   late final ImageLinks imageLinks;
   late final String language;
 
-  VolumeInfo.fromJson(Map<String, dynamic> json) {
-    title = json['title'];
-    authors = List.castFrom<dynamic, String>(json['authors']);
-    publisher = json['publisher'];
-    publishedDate = json['publishedDate'];
-    description = json['description'];
-    industryIdentifiers = List.from(json['industryIdentifiers'])
+  VolumeInfo.fromJson(Map<String, dynamic>? json) {
+    title = json?['title'] ?? '';
+    authors = List.castFrom<dynamic, String>(json?['authors'] ?? []);
+    publisher = json?['publisher'] ?? '';
+    publishedDate = json?['publishedDate'] ?? '';
+    description = json?['description'] ?? '';
+    industryIdentifiers = List.from(json?['industryIdentifiers'] ?? [])
         .map((e) => IndustryIdentifiers.fromJson(e))
         .toList();
-    pageCount = json['pageCount'];
-    categories = List.castFrom<dynamic, String>(json['categories']);
-    averageRating = json['averageRating'] ?? null;
-    maturityRating = json['maturityRating'];
-    imageLinks = ImageLinks.fromJson(json['imageLinks']);
-    language = json['language'];
+    pageCount = json?['pageCount'] ?? 0;
+    categories = List.castFrom<dynamic, String>(json?['categories'] ?? []);
+    averageRating = json?['averageRating'] ?? null;
+    maturityRating = json?['maturityRating'] ?? '';
+    imageLinks = ImageLinks.fromJson(json?['imageLinks'] ?? {});
+    language = json?['language'] ?? '';
   }
 
   Map<String, dynamic> toJson() {
@@ -184,8 +184,8 @@ class IndustryIdentifiers {
   late final String identifier;
 
   IndustryIdentifiers.fromJson(Map<String, dynamic> json) {
-    type = json['type'];
-    identifier = json['identifier'];
+    type = json['type'] ?? '';
+    identifier = json['identifier'] ?? '';
   }
 
   Map<String, dynamic> toJson() {
@@ -198,21 +198,21 @@ class IndustryIdentifiers {
 
 class ImageLinks {
   ImageLinks({
-    required this.smallThumbnail,
-    required this.thumbnail,
+    this.smallThumbnail,
+    this.thumbnail,
   });
-  late final String smallThumbnail;
-  late final String thumbnail;
+  late final String? smallThumbnail;
+  late final String? thumbnail;
 
-  ImageLinks.fromJson(Map<String, dynamic> json) {
-    smallThumbnail = json['smallThumbnail'];
-    thumbnail = json['thumbnail'];
+  ImageLinks.fromJson(Map<String, dynamic>? json) {
+    smallThumbnail = json?['smallThumbnail'] as String?;
+    thumbnail = json?['thumbnail'] as String?;
   }
 
   Map<String, dynamic> toJson() {
     final _data = <String, dynamic>{};
-    _data['smallThumbnail'] = smallThumbnail;
-    _data['thumbnail'] = thumbnail;
+    _data['smallThumbnail'] = smallThumbnail ?? '';
+    _data['thumbnail'] = thumbnail ?? '';
     return _data;
   }
 }
