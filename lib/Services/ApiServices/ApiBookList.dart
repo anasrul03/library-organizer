@@ -78,11 +78,11 @@ class BookListService {
 
     if (response.statusCode == 200) {
       print(response.statusCode);
-      print(response.body);
+      // print(response.body);
       return ApiBookList.fromJson(response.body);
     } else {
       print(response.statusCode);
-      print(response.body);
+      // print(response.body);
       throw Exception('Error, try again');
     }
   }

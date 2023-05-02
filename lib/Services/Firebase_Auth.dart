@@ -20,30 +20,30 @@ class Authentication extends StatefulWidget {
 class _AuthenticationState extends State<Authentication> {
   bool isLogged = true; // change to true if u want to start at login page
 
-  @override
-  Widget build(BuildContext context) {
-    if (isLogged) {
-      return LoginPage(
-        toSignUpPage: toggle,
-      );
-    } else {
-      return BlocProvider(
-        create: (context) => SignupCubit(authRepo: context.read<AuthRepo>()),
-        child: SignUpPage(
-          toLoginPage: toggle,
-        ),
-      );
-    }
-  }
-
   // @override
-  // Widget build(BuildContext context) => isLogged
-  //     ? LoginPage(
-  //         toSignUpPage: toggle,
-  //       )
-  //     : SignUpPage(
-  //       toLoginPage: toggle,
+  // Widget build(BuildContext context) {
+  //   if (isLogged) {
+  //     return LoginPage(
+  //       toSignUpPage: toggle,
   //     );
+  //   } else {
+  //     return BlocProvider(
+  //       create: (context) => SignupCubit(authRepo: context.read<AuthRepo>()),
+  //       child: SignUpPage(
+  //         toLoginPage: toggle,
+  //       ),
+  //     );
+  //   }
+  // }
+
+  @override
+  Widget build(BuildContext context) => isLogged
+      ? LoginPage(
+          toSignUpPage: toggle,
+        )
+      : SignUpPage(
+          toLoginPage: toggle,
+        );
 
   void toggle() => setState(() => isLogged = !isLogged);
 }
