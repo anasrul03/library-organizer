@@ -59,34 +59,37 @@ class _BookSearchPageState extends State<BookSearchPage> {
           },
         ),
       ),
-      body: Container(
-        child: ListView.builder(
-          itemCount: _searchResults.length,
-          itemBuilder: (BuildContext context, int index) {
-            Map<String, dynamic> book = _searchResults[index]['volumeInfo'];
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BookDetailsPage(
-                          isbn: book['industryIdentifiers'][0]['identifier']),
+      body: _searchResults.isEmpty
+          ? const Center(
+              child: Text('No items found'),
+            )
+          : ListView.builder(
+              itemCount: _searchResults.length,
+              itemBuilder: (BuildContext context, int index) {
+                Map<String, dynamic> book = _searchResults[index]['volumeInfo'];
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookDetailsPage(
+                              isbn: book['industryIdentifiers'][0]
+                                  ['identifier']),
+                        ),
+                      );
+                    },
+                    child: ListTile(
+                      leading: book['imageLinks'] != null
+                          ? Image.network(book['imageLinks']['thumbnail'])
+                          : Container(),
+                      title: Text(book['title'] ?? ''),
                     ),
-                  );
-                },
-                child: ListTile(
-                  leading: book['imageLinks'] != null
-                      ? Image.network(book['imageLinks']['thumbnail'])
-                      : Container(),
-                  title: Text(book['title'] != null ? book['title'] : ''),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }
