@@ -20,18 +20,18 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
   final db = FirebaseFirestore.instance;
 
-  void checkUserInput(categoriesList) {
-    List<Categories> tmpArray = [];
-    categoriesList.forEach((value) {
-      if (value == true) {
-        tmpArray.add(value);
-      }
-    });
-    for (Categories category in categoriesList) {
-      // print('${category.title}: ${category.isSelected}');
-      print(tmpArray.toList());
-    }
-  }
+  // void checkUserInput(categoriesList) {
+  //   List<Categories> tmpArray = [];
+  //   categoriesList.forEach((value) {
+  //     if (value == true) {
+  //       tmpArray.add(value);
+  //     }
+  //   });
+  //   for (Categories category in categoriesList) {
+  //     // print('${category.title}: ${category.isSelected}');
+  //     print(tmpArray.toList());
+  //   }
+  // }
 
   Future<void> addBook(BuildContext context, isbn, imageLinks, categories,
       title, categoriesList) async {
@@ -52,15 +52,20 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         'categories': categories,
         'title': title,
       };
-      print("Added Book to Rack: $categoriesList");
       if (doc.exists) {
-        await docRef.update({
-          categoriesList: FieldValue.arrayUnion([bookLibraries])
-        });
+        for (String categoriesName in categoriesList) {
+          await docRef.update({
+            categoriesName: FieldValue.arrayUnion([bookLibraries])
+          });
+          print("Added Book to Rack: ${categoriesName}");
+        }
       } else {
-        await docRef.set({
-          categoriesList: [bookLibraries]
-        });
+        for (String categoriesName in categoriesList) {
+          await docRef.set({
+            categoriesName: [bookLibraries]
+          });
+          print("Added Book to Rack: ${categoriesName}");
+        }
       }
 
       fetchData();

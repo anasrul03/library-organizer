@@ -27,7 +27,7 @@ class BookDetailsState extends State<BookDetailsPage> {
   List<Items> toRender = [];
   bool isAnon = false;
   List<String> itemList = ['Flutter', 'Javascript', 'React'];
-  CheckListCategories _checkListCategories = CheckListCategories();
+  // CheckListCategories checkListCategories = CheckListCategories(isbn: widget.isbn);
   @override
   void initState() {
     super.initState();
@@ -194,35 +194,22 @@ class BookDetailsState extends State<BookDetailsPage> {
                                     builder: (BuildContext context, state) {
                                       return ElevatedButton(
                                         onPressed: () async {
+                                          print("pressed");
                                           await showDialog(
                                               context: context,
                                               builder: (context) {
                                                 return AlertDialog(
                                                   title: Text("Which Rack ?"),
-                                                  content:
-                                                      CheckListCategories(),
+                                                  content: CheckListCategories(
+                                                      isbn: widget.isbn),
+                                                  // Text("s"),
                                                   actions: <Widget>[
                                                     TextButton(
-                                                      onPressed: () {
-                                                        context
-                                                            .read<
-                                                                FirestoreCubit>()
-                                                            .checkUserInput(
-                                                                _checkListCategories
-                                                                    .categoriesList);
-                                                        // context.read<FirestoreCubit>().addBook(
-                                                        //     context,
-                                                        //     "${widget.isbn}",
-                                                        //     "${bookModel.volumeInfo?.imageLinks.smallThumbnail}",
-                                                        //     "${(bookModel.volumeInfo?.categories.join(', '))}",
-                                                        //     "${bookModel.volumeInfo?.title}",
-                                                        //     _checkListCategories
-                                                        //         .categoriesList[
-                                                        //             0]
-                                                        //         .title);
-                                                      },
-                                                      child: const Text('Add'),
-                                                    ),
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child: Text("DISMISS"))
                                                   ],
                                                 );
                                               });
@@ -231,14 +218,14 @@ class BookDetailsState extends State<BookDetailsPage> {
                                           //     .checkUserInput(
                                           //         _checkListCategories
                                           //             .categoriesList);
-                                          context.read<FirestoreCubit>().addBook(
-                                              context,
-                                              "${widget.isbn}",
-                                              "${bookModel.volumeInfo?.imageLinks.smallThumbnail}",
-                                              "${(bookModel.volumeInfo?.categories.join(', '))}",
-                                              "${bookModel.volumeInfo?.title}",
-                                              _checkListCategories
-                                                  .categoriesList[0].title);
+                                          // context.read<FirestoreCubit>().addBook(
+                                          //     context,
+                                          //     "${widget.isbn}",
+                                          //     "${bookModel.volumeInfo?.imageLinks.smallThumbnail}",
+                                          //     "${(bookModel.volumeInfo?.categories.join(', '))}",
+                                          //     "${bookModel.volumeInfo?.title}",
+                                          //     checkListCategories
+                                          //         .categoriesList[0].title);
                                           // context.read<FirestoreCubit>().addBook(
                                           //     context,
                                           //     "${widget.isbn}",
