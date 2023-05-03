@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
           body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
           bottomNavigationBar: CurvedNavigationBar(
             key: navigatorKey,
-            height: 60,
+            height: 70,
             color: Colors.grey[900]!,
             buttonBackgroundColor: Colors.grey[900],
             backgroundColor: Colors.indigo,
