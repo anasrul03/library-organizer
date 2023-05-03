@@ -54,7 +54,7 @@ class BookDetailsState extends State<BookDetailsPage> {
               if (toRender.isNotEmpty) {
                 final Items bookModel = toRender[0];
                 bool showRatingBar = false;
-                if (bookModel.volumeInfo.averageRating != null) {
+                if (bookModel.volumeInfo?.averageRating != null) {
                   showRatingBar = true;
                 }
 
@@ -69,34 +69,26 @@ class BookDetailsState extends State<BookDetailsPage> {
                           children: [
                             Column(
                               children: [
-                                // CachedNetworkImage(
-                                //   imageUrl: bookModel
-                                //       .volumeInfo.imageLinks.smallThumbnail,
-                                //   placeholder: (context, url) =>
-                                //       LoadingAnimationWidget.staggeredDotsWave(
-                                //           color: Colors.indigo, size: 50),
-                                //   // 'https://bookstoreromanceday.org/wp-content/uploads/2020/08/book-cover-placeholder.png',
-                                //   errorWidget: (context, url, error) =>
-                                //       const Icon(Icons.error),
-                                //   fit: BoxFit.cover,
-                                //   height: 200,
-                                // ),
-                                toRender.isNotEmpty
-                                    ? SizedBox(
-                                        width: 150,
-                                        child: Image.network(
-                                          bookModel.volumeInfo.imageLinks
-                                                  .smallThumbnail ??
-                                              "",
-                                          height: 200,
-                                          width: 150,
-                                        ),
-                                      )
-                                    : Image.network(
-                                        'https://bookstoreromanceday.org/wp-content/uploads/2020/08/book-cover-placeholder.png',
-                                        height: 200,
-                                        width: 150,
-                                      ),
+                                CachedNetworkImage(
+                                  imageUrl: bookModel.volumeInfo?.imageLinks
+                                          .smallThumbnail ??
+                                      '',
+                                  placeholder: (context, url) =>
+                                      LoadingAnimationWidget.staggeredDotsWave(
+                                          color: Colors.indigo, size: 50),
+                                  errorWidget: (context, url, error) =>
+                                      FadeInImage.assetNetwork(
+                                    placeholder:
+                                        'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                                    image:
+                                        'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                                    fit: BoxFit.cover,
+                                    height: 150,
+                                  ),
+                                  fit: BoxFit.cover,
+                                  width: 150,
+                                  height: 200,
+                                ),
                                 const SizedBox(height: 6),
                                 Text('ISBN: ${widget.isbn}'),
                                 const SizedBox(height: 20),
@@ -111,7 +103,7 @@ class BookDetailsState extends State<BookDetailsPage> {
                                   children: [
                                     Text(
                                       toRender.isNotEmpty
-                                          ? bookModel.volumeInfo.title
+                                          ? bookModel.volumeInfo!.title
                                           : '',
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold,
@@ -122,7 +114,7 @@ class BookDetailsState extends State<BookDetailsPage> {
                                       child: showRatingBar
                                           ? RatingBar.builder(
                                               initialRating: bookModel
-                                                  .volumeInfo.averageRating!
+                                                  .volumeInfo?.averageRating!
                                                   .toDouble(),
                                               minRating: 0,
                                               direction: Axis.horizontal,
@@ -144,22 +136,22 @@ class BookDetailsState extends State<BookDetailsPage> {
                                     const SizedBox(height: 20),
                                     Text(
                                       toRender.isNotEmpty
-                                          ? 'Author: ${(bookModel.volumeInfo.authors.join(', '))}'
+                                          ? 'Author: ${(bookModel.volumeInfo?.authors.join(', '))}'
                                           : '',
                                     ),
                                     const SizedBox(height: 20),
                                     Text(
                                       toRender.isNotEmpty
-                                          ? 'Categories: ${(bookModel.volumeInfo.categories.join(', '))}'
+                                          ? 'Categories: ${(bookModel.volumeInfo?.categories.join(', '))}'
                                           : '',
                                     ),
                                     const SizedBox(height: 20),
                                     Text(toRender.isNotEmpty
-                                        ? 'Book Publisher: ${bookModel.volumeInfo.publisher}'
+                                        ? 'Book Publisher: ${bookModel.volumeInfo?.publisher}'
                                         : ''),
                                     const SizedBox(height: 20),
                                     Text(toRender.isNotEmpty
-                                        ? 'Date of Publish: ${bookModel.volumeInfo.publishedDate}'
+                                        ? 'Date of Publish: ${bookModel.volumeInfo?.publishedDate}'
                                         : ''),
                                   ],
                                 ),
@@ -168,15 +160,15 @@ class BookDetailsState extends State<BookDetailsPage> {
                           ],
                         ),
                         Text(toRender.isNotEmpty
-                            ? 'Book Description: ${bookModel.volumeInfo.description}'
+                            ? 'Book Description: ${bookModel.volumeInfo?.description}'
                             : ''),
                         const SizedBox(height: 20),
                         Text(toRender.isNotEmpty
-                            ? 'Book Language: ${bookModel.volumeInfo.language}'
+                            ? 'Book Language: ${bookModel.volumeInfo?.language}'
                             : ''),
                         const SizedBox(height: 20),
                         Text(toRender.isNotEmpty
-                            ? 'Number of Pages: ${bookModel.volumeInfo.pageCount}'
+                            ? 'Number of Pages: ${bookModel.volumeInfo?.pageCount}'
                             : ''),
                         const SizedBox(height: 20),
                         BlocBuilder<FirestoreCubit, FirestoreState>(
@@ -185,11 +177,12 @@ class BookDetailsState extends State<BookDetailsPage> {
                               onPressed: () {
                                 print("Added");
                                 context.read<FirestoreCubit>().addBook(
-                                    "${widget.isbn}",
-                                    "${bookModel.volumeInfo.imageLinks.smallThumbnail}",
-                                    "${(bookModel.volumeInfo.categories.join(', '))}");
+                                    widget.isbn,
+                                    "${bookModel.volumeInfo?.imageLinks.smallThumbnail}",
+                                    (bookModel.volumeInfo?.categories
+                                        .join(', ')));
                               },
-                              child: Text('Add to Library'),
+                              child: const Text('Add to Library'),
                             );
                           },
                         )
@@ -199,7 +192,7 @@ class BookDetailsState extends State<BookDetailsPage> {
                 );
               } else if (state is BookDetailsError) {
                 Navigator.pop(context,
-                    'Sorry, item is not available currently: ${state.message}');
+                    'Sorry, item is not available currently ${state.message}');
                 return const Text('');
               } else {
                 return const Center(
