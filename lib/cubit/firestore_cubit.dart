@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:lib_org/Pages/Home_Page.dart';
 import 'package:lib_org/cubit/auth_state.dart';
+import '../Components/Categories.dart';
 import '../main.dart';
 // import '../../components/snackbar.dart';
 
@@ -19,9 +20,21 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
   final db = FirebaseFirestore.instance;
 
-  Future<void> addBook(
-      BuildContext context, isbn, imageLinks, categories, title) async {
-    final List<String> myLibraries = ['flutter', 'javascript'];
+  void checkUserInput(categoriesList) {
+    List<Categories> tmpArray = [];
+    categoriesList.forEach((value) {
+      if (value == true) {
+        tmpArray.add(value);
+      }
+    });
+    for (Categories category in categoriesList) {
+      // print('${category.title}: ${category.isSelected}');
+      print(tmpArray.toList());
+    }
+  }
+
+  Future<void> addBook(BuildContext context, isbn, imageLinks, categories,
+      title, categoriesList) async {
     try {
       final user = authState.user;
       // print(user);
@@ -39,14 +52,14 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         'categories': categories,
         'title': title,
       };
-
+      print("Added Book to Rack: $categoriesList");
       if (doc.exists) {
         await docRef.update({
-          myLibraries[0]: FieldValue.arrayUnion([bookLibraries])
+          categoriesList: FieldValue.arrayUnion([bookLibraries])
         });
       } else {
         await docRef.set({
-          myLibraries[0]: [bookLibraries]
+          categoriesList: [bookLibraries]
         });
       }
 

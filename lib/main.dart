@@ -12,6 +12,7 @@ import 'package:lib_org/Pages/Home_Page.dart';
 import 'package:lib_org/Services/ApiStates/ApiListStates.dart';
 import 'package:lib_org/Services/Firebase_Auth.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
+import 'package:lib_org/cubit/firestore_cubit.dart';
 import 'package:lib_org/cubit/signup_cubit.dart';
 import 'package:lib_org/firebase_options.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -58,6 +59,11 @@ class _MyAppState extends State<MyApp> {
           BlocProvider(
             create: (BuildContext context) {
               return BookDetailsCubit();
+            },
+          ),
+          BlocProvider(
+            create: (BuildContext context) {
+              return FirestoreCubit(context.read<AuthRepo>().state);
             },
           ),
         ],

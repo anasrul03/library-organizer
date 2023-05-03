@@ -1,8 +1,9 @@
-// ignore_for_file: prefer_const_constructors, unnecessary_string_interpolations
+// ignore_for_file: prefer_const_constructors, unnecessary_string_interpolations, avoid_print, use_build_context_synchronously
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lib_org/Components/CheckList.dart';
 import 'package:lib_org/Services/ApiStates/ApiDetailsStates.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
 import 'package:lib_org/cubit/auth_state.dart';
@@ -26,7 +27,7 @@ class BookDetailsState extends State<BookDetailsPage> {
   List<Items> toRender = [];
   bool isAnon = false;
   List<String> itemList = ['Flutter', 'Javascript', 'React'];
-
+  CheckListCategories _checkListCategories = CheckListCategories();
   @override
   void initState() {
     super.initState();
@@ -108,7 +109,7 @@ class BookDetailsState extends State<BookDetailsPage> {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Container(
+                              child: SizedBox(
                                 width: 200,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,35 +191,60 @@ class BookDetailsState extends State<BookDetailsPage> {
                                     onPressed: null,
                                     child: Text("Sigin to add"))
                                 : BlocBuilder<FirestoreCubit, FirestoreState>(
-                                    builder: (context, state) {
+                                    builder: (BuildContext context, state) {
                                       return ElevatedButton(
                                         onPressed: () async {
                                           await showDialog(
                                               context: context,
                                               builder: (context) {
                                                 return AlertDialog(
-                                                  title: const Text(
-                                                      'Choose your categories'),
-                                                  content: Text("PELANCO"),
+                                                  title: Text("Which Rack ?"),
+                                                  content:
+                                                      CheckListCategories(),
                                                   actions: <Widget>[
                                                     TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.of(context)
-                                                              .pop(),
-                                                      child:
-                                                          const Text('Close'),
+                                                      onPressed: () {
+                                                        context
+                                                            .read<
+                                                                FirestoreCubit>()
+                                                            .checkUserInput(
+                                                                _checkListCategories
+                                                                    .categoriesList);
+                                                        // context.read<FirestoreCubit>().addBook(
+                                                        //     context,
+                                                        //     "${widget.isbn}",
+                                                        //     "${bookModel.volumeInfo?.imageLinks.smallThumbnail}",
+                                                        //     "${(bookModel.volumeInfo?.categories.join(', '))}",
+                                                        //     "${bookModel.volumeInfo?.title}",
+                                                        //     _checkListCategories
+                                                        //         .categoriesList[
+                                                        //             0]
+                                                        //         .title);
+                                                      },
+                                                      child: const Text('Add'),
                                                     ),
                                                   ],
                                                 );
                                               });
-
-                                          print("Added");
+                                          // context
+                                          //     .read<FirestoreCubit>()
+                                          //     .checkUserInput(
+                                          //         _checkListCategories
+                                          //             .categoriesList);
                                           context.read<FirestoreCubit>().addBook(
                                               context,
                                               "${widget.isbn}",
                                               "${bookModel.volumeInfo?.imageLinks.smallThumbnail}",
                                               "${(bookModel.volumeInfo?.categories.join(', '))}",
-                                              "${bookModel.volumeInfo?.title}");
+                                              "${bookModel.volumeInfo?.title}",
+                                              _checkListCategories
+                                                  .categoriesList[0].title);
+                                          // context.read<FirestoreCubit>().addBook(
+                                          //     context,
+                                          //     "${widget.isbn}",
+                                          //     "${bookModel.volumeInfo?.imageLinks.smallThumbnail}",
+                                          //     "${(bookModel.volumeInfo?.categories.join(', '))}",
+                                          //     "${bookModel.volumeInfo?.title}", _checkListCategories.categoriesList[0].title);
                                         },
                                         child: Text('Add to Library'),
                                       );
