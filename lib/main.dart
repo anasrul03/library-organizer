@@ -84,11 +84,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  setUserId(String? userId) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    //   // Try reading data from the 'action' key. If it doesn't exist, returns null.
-    prefs.setString('userId', userId!);
-  }
+  // setUserId(String? userId) async {
+  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   //   // Try reading data from the 'action' key. If it doesn't exist, returns null.
+  //   prefs.setString('userId', userId!);
+  // }
 
   @override
   Widget build(BuildContext context) {

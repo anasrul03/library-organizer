@@ -1,18 +1,28 @@
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously, prefer_interpolation_to_compose_strings, avoid_print
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
+import 'package:fluttertoast/fluttertoast.dart';
 import '../main.dart';
 import 'auth_state.dart';
 
 class AuthRepo extends Cubit<AuthState> {
-  AuthRepo() : super(const AuthState()) {
+  AuthRepo() : super(AuthState.initial()) {
     checkSignin();
   }
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  void emailChanged(String value) {
+    emit(state.copyWith(email: value, status: AuthStatus.initial));
+  }
+
+  void passwordChanged(String value) {
+    emit(state.copyWith(password: value, status: AuthStatus.initial));
+  }
 
   Future<void> checkSignin() async {
     final User? user = _auth.currentUser;
@@ -54,45 +64,77 @@ class AuthRepo extends Cubit<AuthState> {
     }
   }
 
-  Future logIn(BuildContext context, String email, String password) async {
-    // if (isLoading == true) {
-
-    // }
-    // print(_emailController.text.trim());
+  Future logIn(BuildContext context, bool loaded) async {
     try {
       var user = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+        email: state.email,
+        password: state.password,
       );
       emit(state.copyWith(user: user.user));
+      print(user);
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        showCloseIcon: true,
         backgroundColor: Colors.green,
-        content: Text("Successfully Logged as " + email),
+        content: Text("Successfully Logged as " + state.email),
         duration: Duration(seconds: 1),
       ));
     } catch (e) {
       print("ERROR: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        showCloseIcon: true,
         backgroundColor: Colors.red,
         content: Text("Please input a correct email and password !!"),
         duration: Duration(seconds: 3),
       ));
     }
+    loaded = false;
     navigatorKey.currentState!.popUntil((route) => route.isFirst);
+  }
+
+  Future signOut(BuildContext context) async {
+    try {
+      GoogleSignIn().disconnect();
+      await FirebaseAuth.instance.signOut();
+      emit(state.copyWith(email: "", password: "", status: AuthStatus.initial));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        showCloseIcon: true,
+        duration: Duration(seconds: 1),
+        content: Text("Logged out"),
+        backgroundColor: Colors.grey,
+      ));
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        showCloseIcon: true,
+        duration: Duration(seconds: 6),
+        content: Text("Firebase Error: $e"),
+        backgroundColor: Colors.red,
+      ));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        showCloseIcon: true,
+        duration: Duration(seconds: 6),
+        content: Text("Error: $e"),
+        backgroundColor: Colors.red,
+      ));
+    }
   }
 
   Future anon(context) async {
     try {
-      await FirebaseAuth.instance.signInAnonymously();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.green,
-        content: Text("Logged Anonymously"),
-        duration: Duration(seconds: 1),
-      ));
+      var user = await FirebaseAuth.instance.signInAnonymously();
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   showCloseIcon: true,
+      //   backgroundColor: Colors.green,
+      //   content: Text("Logged Anonymously"),
+      //   duration: Duration(seconds: 1),
+      // ));
+      Fluttertoast.showToast(msg: 'Logging as anon');
+      emit(state.copyWith(user: user.user));
     } catch (e) {
       print("ERROR: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        showCloseIcon: true,
         backgroundColor: Colors.red,
         content: Text("Cannot Log! Anon : $e"),
         duration: Duration(seconds: 3),
