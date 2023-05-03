@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lib_org/Pages/BookDetails_Page.dart';
 import 'package:lib_org/Pages/Search_Page.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-
 import '../Services/ApiServices/ApiBookList.dart';
 import '../Services/ApiStates/ApiListStates.dart';
 
@@ -18,24 +17,40 @@ class HomeWidget extends StatefulWidget {
 class HomeWidgetState extends State<HomeWidget> {
   final _scrollController = ScrollController();
   late BookListCubit cubit;
+  final _bookList = <Items>[];
   List<Items> toRender = [];
   bool isLoading = false;
   String? selectedGenre;
+  final _maxResults = 20;
+  int _startIndex = 0;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     cubit = BlocProvider.of<BookListCubit>(context);
-    cubit.fetchBookList(selectedGenre);
+    cubit.fetchBookList(selectedGenre, _startIndex, _maxResults);
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-        setState(() {
-          isLoading = true;
-        });
-        cubit.fetchBookList(selectedGenre);
+        {
+          setState(() {
+            isLoading = true;
+          });
+          cubit.fetchBookList(selectedGenre, _startIndex, _maxResults);
+          setState(() {
+            _startIndex += _maxResults;
+            _isLoading = false;
+          });
+        }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,10 +67,6 @@ class HomeWidgetState extends State<HomeWidget> {
                       color: Colors.indigo, size: 50),
               errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
-            // Image.network(
-            //   'https://cdn.dribbble.com/users/1936570/screenshots/15671618/media/8b5f68528a7089ad95e2cb9a98f3977f.gif',
-            //   fit: BoxFit.cover,
-            // ),
             const Center(
               child: Baseline(
                 baseline: 190,
@@ -94,12 +105,14 @@ class HomeWidgetState extends State<HomeWidget> {
                   value: selectedGenre,
                   onChanged: (String? value) {
                     setState(() {
-                      selectedGenre = value;
+                      selectedGenre = value!;
                       toRender.clear();
                     });
-                    cubit.fetchBookList(selectedGenre!);
+                    cubit.fetchBookList(
+                        selectedGenre, _startIndex, _maxResults);
                   },
                   items: genre
+                      .toSet()
                       .map((genre) => DropdownMenuItem<String>(
                             value: genre,
                             child: Text(genre.replaceAll("+", " ")),
@@ -139,65 +152,104 @@ class HomeWidgetState extends State<HomeWidget> {
                 }
                 if (state is BookListLoaded) {
                   toRender.addAll(state.apiBookList.items);
+                  if (_startIndex >= state.apiBookList.totalItems) {
+                    _startIndex = 0;
+                  }
                   isLoading = false;
+                } else if (state is BookListError) {
+                  return Center(
+                    child: Text("Error: ${state.message}"),
+                  );
+                }
+                if (toRender.isNotEmpty) {
+                  if (toRender.contains('ISBN_13') ||
+                      toRender.contains('ISBN_10')) {
+                    toRender.removeWhere((item) =>
+                        item.volumeInfo.industryIdentifiers[0].type !=
+                            'ISBN_13' &&
+                        item.volumeInfo.industryIdentifiers[0].type !=
+                            'ISBN_10');
+                  }
+                }
+
+                if (toRender.isEmpty) {
+                  return const Center(child: Text('No books found.'));
                 }
                 return GridView.builder(
                   controller: _scrollController,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     childAspectRatio: 0.6,
-                    mainAxisSpacing: 5,
-                    crossAxisSpacing: 5,
+                    crossAxisSpacing: 2,
                   ),
                   itemCount: toRender.length + (isLoading ? 1 : 0),
                   itemBuilder: (BuildContext context, int index) {
-                    if (index == toRender.length) {
-                      return Center(
-                        child: LoadingAnimationWidget.staggeredDotsWave(
-                            color: Colors.indigo, size: 50),
-                      );
-                    }
-                    final Items bookModel = toRender[index];
-
-                    return InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BookDetailsPage(
-                                isbn: bookModel.volumeInfo
-                                    .industryIdentifiers[0].identifier),
-                          ),
+                    if (toRender.isNotEmpty) {
+                      if (index == toRender.length) {
+                        return Center(
+                          child: LoadingAnimationWidget.staggeredDotsWave(
+                              color: Colors.indigo, size: 50),
                         );
-                      },
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
+                      }
+                      final Items bookModel = toRender[index];
+                      return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BookDetailsPage(
+                                    isbn: bookModel.volumeInfo
+                                        .industryIdentifiers[0].identifier),
+                              ),
+                            ).then((value) {
+                              if (value != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Text(value),
+                                    ),
+                                    backgroundColor: Colors.indigo,
+                                  ),
+                                );
+                              }
+                            });
+                          },
                           child: Column(
                             children: [
                               CachedNetworkImage(
-                                imageUrl: bookModel
-                                    .volumeInfo.imageLinks.smallThumbnail,
+                                imageUrl: bookModel.volumeInfo.imageLinks!
+                                        .smallThumbnail ??
+                                    '',
                                 placeholder: (context, url) =>
                                     LoadingAnimationWidget.staggeredDotsWave(
                                         color: Colors.indigo, size: 50),
                                 errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
-                                fit: BoxFit.cover,
-                                height: 150,
+                                    FadeInImage.assetNetwork(
+                                  placeholder:
+                                      'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                                  image:
+                                      'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                                  fit: BoxFit.cover,
+                                ),
+                                // fit: BoxFit.cover,
+                                height: 160,
+                                width: 120,
                               ),
-                              const SizedBox(height: 3),
+                              const SizedBox(height: 8),
                               Text(
-                                bookModel.volumeInfo.title,
+                                bookModel.volumeInfo.title ?? "",
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black54),
                               ),
                             ],
-                          ),
-                        ),
-                      ),
-                    );
+                          ));
+                    }
+                    return null;
                   },
                 );
               }),
@@ -208,249 +260,3 @@ class HomeWidgetState extends State<HomeWidget> {
     );
   }
 }
-
-
-
-// import 'dart:convert';
-// import 'package:dropdown_button2/dropdown_button2.dart';
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import '../Services/ApiServices/ApiService.dart';
-
-// class HomeWidget extends StatefulWidget {
-//   const HomeWidget({super.key});
-
-//   @override
-//   HomeWidgetState createState() => HomeWidgetState();
-// }
-
-// class HomeWidgetState extends State<HomeWidget> {
-//   late Future<List<Items>> _futureItems;
-//   String? _selectedGenre;
-
-//   List<String> genres = [
-//     "antiques+&+collectibles",
-//     "literary+collections",
-//     "architecture",
-//     "literary+criticism",
-//     "art",
-//     "mathematics",
-//     "bibles",
-//     "medical",
-//     "biography+&+autobiography",
-//     "music",
-//     "body+mind+&+spirit",
-//     "nature",
-//     "business+&+economics",
-//     "performing+arts",
-//     "comics+&+graphic+novels",
-//     "pets",
-//     "computers",
-//     "philosophy",
-//     "cooking",
-//     "photography",
-//     "crafts+&+hobbies",
-//     "poetry",
-//     "design",
-//     "political+science",
-//     "drama",
-//     "psychology",
-//     "education",
-//     "reference",
-//     "family+&+relationships",
-//     "religion",
-//     "fiction",
-//     "science",
-//     "foreign+language+study",
-//     "self-help",
-//     "games+&+activities",
-//     "social+science",
-//     "gardening",
-//     "sports+&+recreation",
-//     "health+&+fitness",
-//     "study+aids",
-//     "history",
-//     "technology+&+engineering",
-//     "house+&+home",
-//     "transportation",
-//     "humor",
-//     "travel",
-//     "juvenile+fiction",
-//     "true+crime",
-//     "juvenile+nonfiction",
-//     "young+adult+fiction",
-//     "language+arts+&+disciplines",
-//     "young+adult+nonfiction",
-//     "law",
-//   ];
-
-//   Future<List<Items>> fetchBookList(String? selectedGenre) async {
-//     if (selectedGenre!.isNotEmpty) {
-//       final response = await http.get(
-//         Uri.parse(
-//             'https://www.googleapis.com/books/v1/volumes?q=subject:$selectedGenre&key=$apiKey'),
-//       );
-
-//       if (response.statusCode == 200 || response.statusCode == 201) {
-//         print(response.statusCode);
-//         print(response.body);
-//         print(response.body.length);
-//         final data = jsonDecode(response.body);
-//         final items =
-//             List.from(data['items']).map((e) => Items.fromJson(e)).toList();
-//         return items;
-//       } else {
-//         print(response.statusCode);
-//         print(response.body);
-//         return [];
-//       }
-//     } else {
-//       return [];
-//     }
-//   }
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _futureItems = fetchBookList(_selectedGenre);
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Lib.Org'),
-//       ),
-//       body: Column(
-//         children: [
-//           DropdownButton2<String>(
-//             hint: const Text('Select a genre'),
-//             value: _selectedGenre,
-//             onChanged: (String? newValue) {
-//               setState(() {
-//                 _selectedGenre = newValue!;
-//                 _futureItems = fetchBookList(_selectedGenre);
-//               });
-//             },
-//             items: genres.map((String genre) {
-//               return DropdownMenuItem(
-//                 value: genre,
-//                 child: Text(genre.replaceAll("+", " ")),
-//               );
-//             }).toList(),
-//           ),
-//           Expanded(
-//             child: FutureBuilder<List<Items>>(
-//               future: _futureItems,
-//               builder: (context, snapshot) {
-//                 if (snapshot.connectionState == ConnectionState.waiting) {
-//                   return const Center(child: CircularProgressIndicator());
-//                 } else if (snapshot.hasData) {
-//                   return GridView.count(
-//                     crossAxisCount: 2,
-//                     children: List.generate(snapshot.data!.length, (index) {
-//                       return Column(
-//                         children: [
-//                           ListTile(
-//                             leading: Image.network(
-//                               snapshot.data![index].volumeInfo.imageLinks
-//                                       .smallThumbnail ??
-//                                   'https://via.placeholder.com/200',
-//                               height: 200,
-//                             ),
-//                             title: Text(snapshot.data![index].volumeInfo.title),
-//                             subtitle: Text(snapshot
-//                                 .data![index].volumeInfo.authors
-//                                 .join(", ")),
-//                           ),
-//                           const Divider(),
-//                         ],
-//                       );
-//                     }),
-//                   );
-//                 } else if (snapshot.hasError) {
-//                   return Center(
-//                     child: Text("Error: ${snapshot.error}"),
-//                   );
-//                 } else {
-//                   return const Center(child: Text("No data found"));
-//                 }
-//               },
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// class HomeWidget extends StatefulWidget {
-//   const HomeWidget({Key? key});
-
-//   @override
-//   HomeWidgetState createState() => HomeWidgetState();
-// }
-
-// class HomeWidgetState extends State<HomeWidget> {
-//   late Future<List<Items>> _futureItems;
-
-//   Future<List<Items>> fetchBookList() async {
-//     final response = await http.get(
-//       Uri.parse(
-//           'https://www.googleapis.com/books/v1/volumes?q=subject:fiction&key=$apiKey'),
-//     );
-
-//     if (response.statusCode == 200 || response.statusCode == 201) {
-//       print(response.statusCode);
-//       print(response.body);
-//       print(response.body.length);
-//       final data = jsonDecode(response.body);
-//       final items = List<dynamic>.from(data['items'] ?? [])
-//           .map((e) => Items.fromJson(e))
-//           .toList();
-//       return items;
-//     } else {
-//       print(response.statusCode);
-//       print(response.body);
-//       return [];
-//     }
-//   }
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _futureItems = fetchBookList();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Lib.Org'),
-//       ),
-//       body: FutureBuilder<List<Items>>(
-//         future: _futureItems,
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return const Center(child: CircularProgressIndicator());
-//           } else if (snapshot.hasData) {
-//             final thumbnailUrl =
-//                 snapshot.data!.first.volumeInfo.imageLinks.smallThumbnail ??
-//                     'https://via.placeholder.com/200';
-//             return Image.network(
-//               thumbnailUrl,
-//               height: 200,
-//               fit: BoxFit.cover,
-//             );
-//           } else if (snapshot.hasError) {
-//             return Center(
-//               child: Text("Error: ${snapshot.error}"),
-//             );
-//           } else {
-//             return const Center(child: Text("No data found"));
-//           }
-//         },
-//       ),
-//     );
-//   }
-// }

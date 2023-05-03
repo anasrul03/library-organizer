@@ -13,8 +13,8 @@ class BookCard extends StatelessWidget {
       child: Column(
         children: [
           Image.network(
-              bookModel.items[1].volumeInfo.imageLinks.smallThumbnail),
-          Text(bookModel.items[1].volumeInfo.title)
+              bookModel.items[1].volumeInfo.imageLinks?.smallThumbnail ?? ""),
+          Text(bookModel.items[1].volumeInfo?.title ?? "")
         ],
       ),
     ));
