@@ -52,7 +52,6 @@ dependencies:
   flutter_signin_button: ^2.0.0
   equatable: ^2.0.5
   cloud_firestore: ^4.5.3
-  fluttertoast: ^8.2.1
 
 dev_dependencies:
   flutter_test:

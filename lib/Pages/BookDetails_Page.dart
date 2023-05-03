@@ -1,8 +1,11 @@
+// ignore_for_file: prefer_const_constructors, unnecessary_string_interpolations
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lib_org/Services/ApiStates/ApiDetailsStates.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
+import 'package:lib_org/cubit/auth_state.dart';
 import 'package:lib_org/cubit/firestore_cubit.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import '../Services/ApiServices/ApiBookDetails.dart';
@@ -21,6 +24,7 @@ class BookDetailsState extends State<BookDetailsPage> {
   // final itemsCubit = ItemsCubit();
   late BookDetailsCubit cubit;
   List<Items> toRender = [];
+  bool isAnon = false;
 
   @override
   void initState() {
@@ -37,8 +41,15 @@ class BookDetailsState extends State<BookDetailsPage> {
         title: const Text('Book Details'),
         backgroundColor: Colors.indigo,
       ),
-      body: BlocProvider(
-        create: (context) => FirestoreCubit(context.read<AuthRepo>().state),
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => FirestoreCubit(context.read<AuthRepo>().state),
+          ),
+          BlocProvider(
+            create: (context) => AuthRepo(),
+          ),
+        ],
         child: BlocBuilder<BookDetailsCubit, BookDetailsStates>(
             bloc: cubit,
             builder: (context, state) {
@@ -90,7 +101,7 @@ class BookDetailsState extends State<BookDetailsPage> {
                                   height: 200,
                                 ),
                                 const SizedBox(height: 6),
-                                Text('ISBN: ${widget.isbn}'),
+                                Text('ISBN: //${widget.isbn}'),
                                 const SizedBox(height: 20),
                               ],
                             ),
@@ -171,19 +182,28 @@ class BookDetailsState extends State<BookDetailsPage> {
                             ? 'Number of Pages: ${bookModel.volumeInfo?.pageCount}'
                             : ''),
                         const SizedBox(height: 20),
-                        BlocBuilder<FirestoreCubit, FirestoreState>(
+                        BlocBuilder<AuthRepo, AuthState>(
                           builder: (context, state) {
-                            return ElevatedButton(
-                              onPressed: () {
-                                print("Added");
-                                context.read<FirestoreCubit>().addBook(
-                                    widget.isbn,
-                                    "${bookModel.volumeInfo?.imageLinks.smallThumbnail}",
-                                    (bookModel.volumeInfo?.categories
-                                        .join(', ')));
-                              },
-                              child: const Text('Add to Library'),
-                            );
+                            return state.user!.email == null
+                                ? ElevatedButton(
+                                    onPressed: null,
+                                    child: Text("Sigin to add"))
+                                : BlocBuilder<FirestoreCubit, FirestoreState>(
+                                    builder: (context, state) {
+                                      return ElevatedButton(
+                                        onPressed: () {
+                                          print("Added");
+                                          context.read<FirestoreCubit>().addBook(
+                                              context,
+                                              "${widget.isbn}",
+                                              "${bookModel.volumeInfo?.imageLinks.smallThumbnail}",
+                                              "${(bookModel.volumeInfo?.categories.join(', '))}",
+                                              "${bookModel.volumeInfo?.title}");
+                                        },
+                                        child: Text('Add to Library'),
+                                      );
+                                    },
+                                  );
                           },
                         )
                       ],

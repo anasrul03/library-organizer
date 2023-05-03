@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
+import 'package:lib_org/cubit/auth_state.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../cubit/firestore_cubit.dart';
@@ -39,6 +41,9 @@ class BookCard extends StatefulWidget {
 }
 
 class _BookCardState extends State<BookCard> {
+  final double cardWidth = 120;
+  final double cardHeight = 400;
+  final int columnNum = 3;
   @override
   void initState() {
     super.initState();
@@ -47,81 +52,107 @@ class _BookCardState extends State<BookCard> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<FirestoreCubit, FirestoreState>(
-      listener: (context, state) {
-        if (state is FirestoreError) {}
+    return BlocConsumer<AuthRepo, AuthState>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        return BlocBuilder<FirestoreCubit, FirestoreState>(
+          builder: (context, state) {
+            if (state is FirestoreLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is FirestoreError) {
+              return Center(
+                child: Text(
+                  state.errorMessage,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
+            } else if (state is FirestoreFetchSuccess) {
+              return GridView.builder(
+                itemCount: state.bookLibraries.myBooks.length,
+                itemBuilder: (context, index) {
+                  final book = state.bookLibraries.myBooks[index];
+                  final isbn = book['ISBN'];
+                  final categories = book['categories'];
+                  final imageLinks = book['imageLinks'];
+                  final title = book['title'];
 
-        if (state is FirestoreSuccess) {}
-      },
-      child: BlocBuilder<FirestoreCubit, FirestoreState>(
-        builder: (context, state) {
-          if (state is FirestoreLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is FirestoreError) {
-            return Center(
-              child: Text(
-                state.errorMessage,
-                style: const TextStyle(color: Colors.red),
-              ),
-            );
-          } else if (state is FirestoreFetchSuccess) {
-            return GridView.builder(
-              itemCount: state.bookLibraries.myBooks.length,
-              itemBuilder: (context, index) {
-                final book = state.bookLibraries.myBooks[index];
-                final isbn = book['ISBN'];
-                final categories = book['categories'];
-                final imageLinks = book['imageLinks'];
-
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BookDetailsPage(isbn: isbn),
-                      ),
-                    );
-                  },
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        children: [
-                          CachedNetworkImage(
+                  return Card(
+                    child: Stack(
+                      children: [
+                        CachedNetworkImage(
+                            height: cardHeight,
                             imageUrl: imageLinks,
-                            placeholder: (context, url) =>
-                                LoadingAnimationWidget.staggeredDotsWave(
-                                    color: Colors.indigo, size: 50),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.error),
-                            fit: BoxFit.cover,
-                            height: 150,
+                            fit: BoxFit.cover),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.9),
+                                Colors.black.withOpacity(0.6),
+                                Colors.black.withOpacity(0.3),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.4, 0.7, 1.0],
+                            ),
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            isbn,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
+                          // Other properties of the container
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            context.read<FirestoreCubit>().deleteBook(
+                                isbn, imageLinks, categories, title);
+                          },
+                          icon: const Icon(
+                            Icons.remove_circle,
+                            color: Colors.white,
                           ),
-                        ],
-                      ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          left: 2,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            width: cardWidth,
+                            height: 55,
+                            child: Text(
+                              title,
+                              textAlign: TextAlign.left,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
                     ),
-                  ),
-                );
-              },
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 0.6,
-                mainAxisSpacing: 5,
-                crossAxisSpacing: 5,
-              ),
-            );
-          } else {
-            return const SizedBox.shrink();
-          }
-        },
-      ),
+                  );
+                },
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columnNum,
+                  childAspectRatio: 0.6,
+                  mainAxisSpacing: 0,
+                  crossAxisSpacing: 0,
+                ),
+              );
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        );
+      },
     );
   }
 }
+
+
+
+       // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => BookDetailsPage(isbn: isbn),
+                      //   ),
+                      // );

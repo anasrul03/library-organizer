@@ -1,12 +1,13 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, use_build_context_synchronously
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:lib_org/Pages/Home_Page.dart';
 import 'package:lib_org/cubit/auth_state.dart';
-
+import '../main.dart';
 // import '../../components/snackbar.dart';
 
 part './firestore_state.dart';
@@ -18,7 +19,9 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
   final db = FirebaseFirestore.instance;
 
-  Future<void> addBook(isbn, imageLinks, categories) async {
+  Future<void> addBook(
+      BuildContext context, isbn, imageLinks, categories, title) async {
+    final List<String> myLibraries = ['flutter', 'javascript'];
     try {
       final user = authState.user;
       // print(user);
@@ -26,32 +29,37 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         emit(const FirestoreError("User not logged in"));
         return;
       }
-
-      // Create a new document in the "favorites" collection with a unique ID
+      // Create a new document in the "bookLibraries" collection with a user email
       final docRef = db.collection("bookLibraries").doc(user.email);
-
       DocumentSnapshot doc = await docRef.get();
 
       final bookLibraries = {
         'ISBN': isbn,
         'imageLinks': imageLinks,
         'categories': categories,
+        'title': title,
       };
 
       if (doc.exists) {
         await docRef.update({
-          categories: FieldValue.arrayUnion([bookLibraries])
+          myLibraries[0]: FieldValue.arrayUnion([bookLibraries])
         });
       } else {
         await docRef.set({
-          categories: [bookLibraries]
+          myLibraries[0]: [bookLibraries]
         });
       }
 
-      // Emit a new state to indicate that the favorite word has been successfully added
-      // emit(FirestoreFetchSuccess(bookLibraries));
-
       fetchData();
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          action: SnackBarAction(
+              label: "Dismiss",
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              }),
+          backgroundColor: Colors.indigo,
+          content: Text("Added to Library")));
     } catch (error) {
       emit(FirestoreError(error.toString()));
       print("got error: $error");
@@ -69,14 +77,14 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         return;
       }
 
-      final docRef = db.collection("bookLibraries").doc("test@gmail.com");
+      final docRef = db.collection("bookLibraries").doc(user.email);
       final docSnapshot = await docRef.get();
-      print(docSnapshot);
+      // print(docSnapshot);
       if (docSnapshot.exists) {
-        print("snapshot is exist");
+        // print("snapshot is exist");
         final data = docSnapshot.data() as Map<String, dynamic>;
-        final bookLibraries = data['Fiction'];
-        print(bookLibraries);
+        final bookLibraries = data['flutter'];
+        // print(bookLibraries);
         if (bookLibraries != null) {
           final bookLibrariesList =
               List<Map<String, dynamic>>.from(bookLibraries);
@@ -95,7 +103,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
     }
   }
 
-  Future<void> removeFavorite(isbn, imageLinks, categories) async {
+  Future<void> removeBook(isbn, imageLinks, categories, title) async {
     emit(FirestoreLoading());
 
     try {
@@ -105,23 +113,51 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         return;
       }
 
-      final docRef = db.collection("bookLibraries").doc(user.uid);
+      final docRef = db
+          .collection("bookLibraries")
+          .doc(user.uid)
+          .collection("flutter")
+          .doc(isbn);
 
       final bookLibraries = {
         'ISBN': isbn,
         'imageLinks': imageLinks,
         'categories': categories,
+        'title': title,
       };
 
-      await docRef.update({
-        categories: FieldValue.arrayRemove([bookLibraries])
-      });
+      await docRef.delete();
 
-      // emit(const FirestoreSuccess("Successfully deleted"));
+      emit(const FirestoreSuccess("Successfully deleted"));
 
       fetchData();
     } catch (error) {
       emit(FirestoreError(error.toString()));
+    }
+  }
+
+  Future<void> deleteBook(String isbn, imageLinks, categories, title) async {
+    try {
+      final user = authState.user;
+      if (user == null) {
+        emit(const FirestoreError("User not logged in"));
+        return;
+      }
+      final docRef = db.collection("bookLibraries").doc(user.email);
+      DocumentSnapshot doc = await docRef.get();
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        final books = data["flutter"] as List<dynamic>;
+        final updatedBooks = List<Map<String, dynamic>>.from(books)
+          ..removeWhere((book) => book['ISBN'] == isbn);
+        await docRef.update({"flutter": updatedBooks});
+        fetchData();
+      } else {
+        emit(const FirestoreError("Data not exist"));
+      }
+    } catch (error) {
+      emit(FirestoreError(error.toString()));
+      print("got error: $error");
     }
   }
 }
