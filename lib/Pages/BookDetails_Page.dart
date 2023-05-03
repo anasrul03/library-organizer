@@ -25,6 +25,7 @@ class BookDetailsState extends State<BookDetailsPage> {
   late BookDetailsCubit cubit;
   List<Items> toRender = [];
   bool isAnon = false;
+  List<String> itemList = ['Flutter', 'Javascript', 'React'];
 
   @override
   void initState() {
@@ -191,7 +192,26 @@ class BookDetailsState extends State<BookDetailsPage> {
                                 : BlocBuilder<FirestoreCubit, FirestoreState>(
                                     builder: (context, state) {
                                       return ElevatedButton(
-                                        onPressed: () {
+                                        onPressed: () async {
+                                          await showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return AlertDialog(
+                                                  title: const Text(
+                                                      'Choose your categories'),
+                                                  content: Text("PELANCO"),
+                                                  actions: <Widget>[
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(),
+                                                      child:
+                                                          const Text('Close'),
+                                                    ),
+                                                  ],
+                                                );
+                                              });
+
                                           print("Added");
                                           context.read<FirestoreCubit>().addBook(
                                               context,
