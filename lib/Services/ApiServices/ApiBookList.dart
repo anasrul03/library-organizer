@@ -16,64 +16,65 @@ String apiKey = dotenv.env['API_KEY']!;
 List<String> genre = [
   // "Antiques+&+Collectibles",
   // "Literary+Collections",
-  "Architecture",
+  // "Architecture",
   // "Literary+Criticism",
-  // "Art",
+  "Art",
   "Mathematics",
   // "Bibles",
   "Medical",
-  // "Biography+&+Autobiography",
-  // "Music",
+  "Biography+&+Autobiography",
+  "Music",
   // "Body+Mind+&+Spirit",
   "Nature",
-  // "Business+&+Economics",
+  "Business+&+Economics",
   // "Performing+Arts",
-  // "Comics",
-  // "Pets",
+  "Comics+&+Graphic+Novels",
+  "Pets",
   "Computers",
-  "Philosophy",
-  // "Cooking",
+  // "Philosophy",
+  "Cooking",
   // "Photography",
-  // "Crafts+&+Hobbies",
-  // "Poetry",
-  // "Design",
+  "Crafts+&+Hobbies", //
+  "Poetry", //
+  "Design", //
   // "Political+Science",
-  // "Drama",
-  // "Psychology",
-  // "Education",
-  // "Reference",
-  // "Family+&+Relationships",
-  // "Religion",
+  "Drama",
+  "Psychology",
+  "Education", //
+  "Reference",
+  "Family+&+Relationships",
+  "Religion",
   "Fiction",
-  // "Science",
+  "Science", //
   // "Foreign+Language+Study",
-  // "Self-Help",
-  // "Games+&+Activities",
+  "Self-Help",
+  "Games+&+Activities", //
   // "Social+Science",
-  // "Gardening",
-  // "Sports+&+Recreation",
-  // "Health+&+Fitness",
+  "Gardening", //
+  "Sports+&+Recreation",
+  "Health+&+Fitness",
   // "Study+Aids",
-  "History",
-  // "Technology+&+Engineering",
-  // "House+&+Home",
-  "Transportation",
+  "History", //
+  "Technology+&+Engineering",
+  "House+&+Home", //
+  "Transportation", //
   "Humor",
   "Travel",
   // "Juvenile+Fiction",
   // "True+Crime",
   // "Juvenile+Nonfiction",
   // "Young+Adult+Fiction",
-  // "Language+Arts+&+Disciplines",
+  "Language+Arts+&+Disciplines",
   // "Young+Adult+Nonfiction",
   "Law",
 ];
 
 class BookListService {
-  Future<ApiBookList> fetchBookList(String genre) async {
+  Future<ApiBookList> fetchBookList(
+      String genre, int startIndex, int maxResults) async {
     final response = await http.get(
       Uri.parse(
-          'https://www.googleapis.com/books/v1/volumes?q=subject:$genre&key=$apiKey'),
+          'https://www.googleapis.com/books/v1/volumes?q=subject:$genre&maxResults=$maxResults&startIndex=$startIndex&key=$apiKey'),
     );
 
     if (response.statusCode == 200) {
@@ -91,19 +92,23 @@ class BookListService {
 class ApiBookList {
   ApiBookList({
     required this.items,
+    required this.totalItems,
   });
   late final List<Items> items;
+  late final int totalItems;
 
   factory ApiBookList.fromJson(String str) =>
       ApiBookList.fromMap(json.decode(str));
 
-  ApiBookList.fromMap(Map<String, dynamic> json) {
-    items = List.from(json['items']).map((e) => Items.fromJson(e)).toList();
+  ApiBookList.fromMap(Map<String, dynamic>? json) {
+    items = List.from(json?['items']).map((e) => Items.fromJson(e)).toList();
+    totalItems = json?['totalItems'] ?? 0;
   }
 
   Map<String, dynamic> toJson() {
     final _data = <String, dynamic>{};
     _data['items'] = items.map((e) => e.toJson()).toList();
+    _data['totalItems'] = totalItems;
     return _data;
   }
 }
@@ -117,8 +122,8 @@ class Items {
   late final VolumeInfo volumeInfo;
 
   Items.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    volumeInfo = VolumeInfo.fromJson(json['volumeInfo']);
+    id = json['id'] ?? '';
+    volumeInfo = VolumeInfo.fromJson(json['volumeInfo'] ?? []);
   }
 
   Map<String, dynamic> toJson() {
@@ -132,55 +137,31 @@ class Items {
 class VolumeInfo {
   VolumeInfo({
     this.title,
-    required this.authors,
-    required this.publisher,
-    required this.publishedDate,
-    required this.description,
     required this.industryIdentifiers,
     required this.categories,
-    required this.maturityRating,
     this.imageLinks,
-    required this.language,
   });
   late final String? title;
-  late final List<String> authors;
-  late final String publisher;
-  late final String publishedDate;
-  late final String description;
   late final List<IndustryIdentifiers> industryIdentifiers;
   late final List<String> categories;
-  late final String maturityRating;
   late final ImageLinks? imageLinks;
-  late final String language;
 
   VolumeInfo.fromJson(Map<String, dynamic> json) {
-    title = json['title'];
-    authors = List.castFrom<dynamic, String>(json['authors']);
-    publisher = json['publisher'];
-    publishedDate = json['publishedDate'];
-    description = json['description'];
-    industryIdentifiers = List.from(json['industryIdentifiers'])
+    title = json['title'] ?? '';
+    industryIdentifiers = List.from(json['industryIdentifiers'] ?? [])
         .map((e) => IndustryIdentifiers.fromJson(e))
         .toList();
-    categories = List.castFrom<dynamic, String>(json['categories']);
-    maturityRating = json['maturityRating'];
-    imageLinks = ImageLinks.fromJson(json['imageLinks']);
-    language = json['language'];
+    categories = List.castFrom<dynamic, String>(json['categories'] ?? []);
+    imageLinks = ImageLinks.fromJson(json['imageLinks'] ?? {});
   }
 
   Map<String, dynamic> toJson() {
     final _data = <String, dynamic>{};
     _data['title'] = title;
-    _data['authors'] = authors;
-    _data['publisher'] = publisher;
-    _data['publishedDate'] = publishedDate;
-    _data['description'] = description;
     _data['industryIdentifiers'] =
         industryIdentifiers.map((e) => e.toJson()).toList();
     _data['categories'] = categories;
-    _data['maturityRating'] = maturityRating;
     _data['imageLinks'] = imageLinks?.toJson();
-    _data['language'] = language;
     return _data;
   }
 }
@@ -194,8 +175,8 @@ class IndustryIdentifiers {
   late final String identifier;
 
   IndustryIdentifiers.fromJson(Map<String, dynamic> json) {
-    type = json['type'];
-    identifier = json['identifier'];
+    type = json['type'] ?? '';
+    identifier = json['identifier'] ?? '';
   }
 
   Map<String, dynamic> toJson() {
@@ -211,18 +192,18 @@ class ImageLinks {
     required this.smallThumbnail,
     required this.thumbnail,
   });
-  late final String smallThumbnail;
-  late final String thumbnail;
+  late final String? smallThumbnail;
+  late final String? thumbnail;
 
-  ImageLinks.fromJson(Map<String, dynamic> json) {
-    smallThumbnail = json['smallThumbnail'];
-    thumbnail = json['thumbnail'];
+  ImageLinks.fromJson(Map<String, dynamic>? json) {
+    smallThumbnail = json?['smallThumbnail'] as String?;
+    thumbnail = json?['thumbnail'] as String?;
   }
 
   Map<String, dynamic> toJson() {
     final _data = <String, dynamic>{};
-    _data['smallThumbnail'] = smallThumbnail;
-    _data['thumbnail'] = thumbnail;
+    _data['smallThumbnail'] = smallThumbnail ?? '';
+    _data['thumbnail'] = thumbnail ?? '';
     return _data;
   }
 }

@@ -89,61 +89,64 @@ class BarcodePageState extends State<BarcodePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          children: [
-            const Spacer(),
-            CachedNetworkImage(
-              imageUrl:
-                  'https://media.tenor.com/8E3SIU76kHgAAAAC/barcode-scan.gif',
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              const SizedBox(
+                height: 160,
               ),
-              onPressed: _scanBarcode,
-              child: const Text('Start Barcode scan'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigoAccent,
+              CachedNetworkImage(
+                imageUrl:
+                    'https://media.tenor.com/8E3SIU76kHgAAAAC/barcode-scan.gif',
               ),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text('Search ISBN No.'),
-                      content: TextField(
-                        controller: _isbnController,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter ISBN No.',
-                        ),
-                      ),
-                      actions: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo,
+              const SizedBox(
+                height: 20,
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo,
+                ),
+                onPressed: _scanBarcode,
+                child: const Text('Start Barcode scan'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigoAccent,
+                ),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Search ISBN No.'),
+                        content: TextField(
+                          controller: _isbnController,
+                          decoration: const InputDecoration(
+                            hintText: 'Enter ISBN No.',
                           ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            String isbn = _isbnController.text.trim();
-                            navigateToBookDetailsPage(isbn);
-                          },
-                          child: const Text('Search'),
                         ),
-                      ],
-                    );
-                  },
-                );
-              },
-              child: const Text('Search ISBN No.'),
-            ),
-            const Spacer(),
-          ],
+                        actions: [
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.indigo,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              String isbn = _isbnController.text.trim();
+                              navigateToBookDetailsPage(isbn);
+                            },
+                            child: const Text('Search'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: const Text('Search ISBN No.'),
+              ),
+            ],
+          ),
         ),
       ),
     );

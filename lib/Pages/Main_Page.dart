@@ -17,24 +17,40 @@ class HomeWidget extends StatefulWidget {
 class HomeWidgetState extends State<HomeWidget> {
   final _scrollController = ScrollController();
   late BookListCubit cubit;
+  final _bookList = <Items>[];
   List<Items> toRender = [];
   bool isLoading = false;
   String? selectedGenre;
+  final _maxResults = 20;
+  int _startIndex = 0;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     cubit = BlocProvider.of<BookListCubit>(context);
-    cubit.fetchBookList(selectedGenre);
+    cubit.fetchBookList(selectedGenre, _startIndex, _maxResults);
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-        setState(() {
-          isLoading = true;
-        });
-        cubit.fetchBookList(selectedGenre);
+        {
+          setState(() {
+            isLoading = true;
+          });
+          cubit.fetchBookList(selectedGenre, _startIndex, _maxResults);
+          setState(() {
+            _startIndex += _maxResults;
+            _isLoading = false;
+          });
+        }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -51,10 +67,6 @@ class HomeWidgetState extends State<HomeWidget> {
                       color: Colors.indigo, size: 50),
               errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
-            // Image.network(
-            //   'https://cdn.dribbble.com/users/1936570/screenshots/15671618/media/8b5f68528a7089ad95e2cb9a98f3977f.gif',
-            //   fit: BoxFit.cover,
-            // ),
             const Center(
               child: Baseline(
                 baseline: 190,
@@ -96,7 +108,8 @@ class HomeWidgetState extends State<HomeWidget> {
                       selectedGenre = value!;
                       toRender.clear();
                     });
-                    cubit.fetchBookList(selectedGenre!);
+                    cubit.fetchBookList(
+                        selectedGenre, _startIndex, _maxResults);
                   },
                   items: genre
                       .toSet()
@@ -139,98 +152,104 @@ class HomeWidgetState extends State<HomeWidget> {
                 }
                 if (state is BookListLoaded) {
                   toRender.addAll(state.apiBookList.items);
+                  if (_startIndex >= state.apiBookList.totalItems) {
+                    _startIndex = 0;
+                  }
                   isLoading = false;
                 } else if (state is BookListError) {
                   return Center(
                     child: Text("Error: ${state.message}"),
                   );
                 }
+                if (toRender.isNotEmpty) {
+                  if (toRender.contains('ISBN_13') ||
+                      toRender.contains('ISBN_10')) {
+                    toRender.removeWhere((item) =>
+                        item.volumeInfo.industryIdentifiers[0].type !=
+                            'ISBN_13' &&
+                        item.volumeInfo.industryIdentifiers[0].type !=
+                            'ISBN_10');
+                  }
+                }
+
+                if (toRender.isEmpty) {
+                  return const Center(child: Text('No books found.'));
+                }
                 return GridView.builder(
                   controller: _scrollController,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     childAspectRatio: 0.6,
-                    mainAxisSpacing: 5,
-                    crossAxisSpacing: 5,
+                    crossAxisSpacing: 2,
                   ),
                   itemCount: toRender.length + (isLoading ? 1 : 0),
                   itemBuilder: (BuildContext context, int index) {
-                    if (index == toRender.length) {
-                      return Center(
-                        child: LoadingAnimationWidget.staggeredDotsWave(
-                            color: Colors.indigo, size: 50),
-                      );
-                    }
-
-                    final Items bookModel = toRender[index];
-
                     if (toRender.isNotEmpty) {
-                      bool showBookCard = false;
-                      if (bookModel.volumeInfo.title != null &&
-                          bookModel.volumeInfo.imageLinks?.smallThumbnail !=
-                              null) {
-                        showBookCard = true;
+                      if (index == toRender.length) {
+                        return Center(
+                          child: LoadingAnimationWidget.staggeredDotsWave(
+                              color: Colors.indigo, size: 50),
+                        );
                       }
+                      final Items bookModel = toRender[index];
                       return InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BookDetailsPage(
-                                  isbn: bookModel.volumeInfo
-                                      .industryIdentifiers[0].identifier),
-                            ),
-                          ).then((value) {
-                            if (value != null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Text(value),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BookDetailsPage(
+                                    isbn: bookModel.volumeInfo
+                                        .industryIdentifiers[0].identifier),
+                              ),
+                            ).then((value) {
+                              if (value != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Text(value),
+                                    ),
+                                    backgroundColor: Colors.indigo,
                                   ),
-                                  backgroundColor: Colors.indigo,
+                                );
+                              }
+                            });
+                          },
+                          child: Column(
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: bookModel.volumeInfo.imageLinks!
+                                        .smallThumbnail ??
+                                    '',
+                                placeholder: (context, url) =>
+                                    LoadingAnimationWidget.staggeredDotsWave(
+                                        color: Colors.indigo, size: 50),
+                                errorWidget: (context, url, error) =>
+                                    FadeInImage.assetNetwork(
+                                  placeholder:
+                                      'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                                  image:
+                                      'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                                  fit: BoxFit.cover,
                                 ),
-                              );
-                            }
-                          });
-                        },
-                        child: showBookCard
-                            ? Card(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8),
-                                  child: Column(
-                                    children: [
-                                      CachedNetworkImage(
-                                        imageUrl:
-                                            bookModel.volumeInfo.imageLinks !=
-                                                    null
-                                                ? bookModel.volumeInfo
-                                                    .imageLinks!.smallThumbnail
-                                                : "",
-                                        placeholder: (context, url) =>
-                                            LoadingAnimationWidget
-                                                .staggeredDotsWave(
-                                                    color: Colors.indigo,
-                                                    size: 50),
-                                        errorWidget: (context, url, error) =>
-                                            const Icon(Icons.error),
-                                        fit: BoxFit.cover,
-                                        height: 150,
-                                      ),
-                                      const SizedBox(height: 3),
-                                      Text(
-                                        bookModel.volumeInfo.title ?? "",
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      );
+                                // fit: BoxFit.cover,
+                                height: 160,
+                                width: 120,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                bookModel.volumeInfo.title ?? "",
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black54),
+                              ),
+                            ],
+                          ));
                     }
+                    return null;
                   },
                 );
               }),

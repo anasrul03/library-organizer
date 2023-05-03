@@ -5,31 +5,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 String apiKey = dotenv.env['API_KEY']!;
 
-// class ItemsCubit extends Cubit<List<Items>> {
-//   ItemsCubit() : super([]);
-
-//   void setItems(List<Items> items) => emit(items);
-
-//   Future<void> fetchBookData(String isbn, ItemsCubit itemsCubit) async {
-//     final response = await http.get(
-//       Uri.parse(
-//           'https://www.googleapis.com/books/v1/volumes?q=isbn:$isbn&key=$apiKey'),
-//     );
-
-//     if (response.statusCode == 200 || response.statusCode == 201) {
-//       print(response.statusCode);
-//       print(response.body);
-//       final data = jsonDecode(response.body);
-//       if (data['totalItems'] > 0) {
-//         final apiService = ApiBookDetails.fromJson(data, itemsCubit);
-//       }
-//     } else {
-//       print(response.statusCode);
-//       print(response.body);
-//     }
-//   }
-// }
-
 class BookDetailsService {
   Future<ApiBookDetails> fetchBookDetails(String isbn) async {
     final response = await http.get(
@@ -49,27 +24,6 @@ class BookDetailsService {
   }
 }
 
-// class ApiBookDetails {
-//   ApiBookDetails({
-//     required this.itemsCubit,
-//   });
-
-//   late final ItemsCubit itemsCubit;
-
-//   ApiBookDetails.fromJson(Map<String, dynamic> json, ItemsCubit itemsCubit) {
-//     final items =
-//         List.from(json['items']).map((e) => Items.fromJson(e)).toList();
-//     itemsCubit.setItems(items);
-//     this.itemsCubit = itemsCubit;
-//   }
-
-//   Map<String, dynamic> toJson() {
-//     final _data = <String, dynamic>{};
-//     _data['items'] = itemsCubit.state.map((e) => e.toJson()).toList();
-//     return _data;
-//   }
-// }
-
 class ApiBookDetails {
   ApiBookDetails({
     required this.items,
@@ -77,7 +31,7 @@ class ApiBookDetails {
   late final List<Items> items;
 
   factory ApiBookDetails.fromJson(String str) =>
-      ApiBookDetails.fromMap(json.decode(str));
+      ApiBookDetails.fromMap(json.decode(str) as Map<String, dynamic>?);
 
   ApiBookDetails.fromMap(Map<String, dynamic>? json) {
     items = List.from(json?['items']).map((e) => Items.fromJson(e)).toList();
@@ -91,23 +45,32 @@ class ApiBookDetails {
 }
 
 class Items {
-  Items({
-    required this.id,
-    required this.volumeInfo,
-  });
-  late final String id;
-  late final VolumeInfo volumeInfo;
+  String? kind;
+  String? id;
+  String? etag;
+  String? selfLink;
+  VolumeInfo? volumeInfo;
+
+  Items({this.kind, this.id, this.etag, this.selfLink, this.volumeInfo});
 
   Items.fromJson(Map<String, dynamic>? json) {
-    id = json?['id'] ?? '';
-    volumeInfo = VolumeInfo.fromJson(json?['volumeInfo'] ?? []);
+    kind = json?['kind'];
+    id = json?['id'];
+    etag = json?['etag'];
+    selfLink = json?['selfLink'];
+    volumeInfo = json?['volumeInfo'] != null
+        ? VolumeInfo?.fromJson(json?['volumeInfo'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
-    final _data = <String, dynamic>{};
-    _data['id'] = id;
-    _data['volumeInfo'] = volumeInfo.toJson();
-    return _data;
+    final Map<String, dynamic> data = Map<String, dynamic>();
+    data['kind'] = kind;
+    data['id'] = id;
+    data['etag'] = etag;
+    data['selfLink'] = selfLink;
+    data['volumeInfo'] = volumeInfo!.toJson();
+    return data;
   }
 }
 
@@ -140,20 +103,22 @@ class VolumeInfo {
   late final String language;
 
   VolumeInfo.fromJson(Map<String, dynamic>? json) {
-    title = json?['title'] ?? '';
-    authors = List.castFrom<dynamic, String>(json?['authors'] ?? []);
-    publisher = json?['publisher'] ?? '';
-    publishedDate = json?['publishedDate'] ?? '';
-    description = json?['description'] ?? '';
-    industryIdentifiers = List.from(json?['industryIdentifiers'] ?? [])
+    title = json?['title'] ?? ' ';
+    authors = List.castFrom<dynamic, String>(json?['authors'] ?? [' ']);
+    publisher = json?['publisher'] ?? ' ';
+    publishedDate = json?['publishedDate'] ?? ' ';
+    description = json?['description'] ?? ' ';
+    industryIdentifiers = List.from(json?['industryIdentifiers'] ?? [' '])
         .map((e) => IndustryIdentifiers.fromJson(e))
         .toList();
     pageCount = json?['pageCount'] ?? 0;
-    categories = List.castFrom<dynamic, String>(json?['categories'] ?? []);
+    categories = List.castFrom<dynamic, String>(json?['categories'] ?? [' ']);
     averageRating = json?['averageRating'] ?? null;
-    maturityRating = json?['maturityRating'] ?? '';
-    imageLinks = ImageLinks.fromJson(json?['imageLinks'] ?? {});
-    language = json?['language'] ?? '';
+    maturityRating = json?['maturityRating'] ?? ' ';
+    imageLinks = json?['imageLinks'] != null
+        ? ImageLinks.fromJson(json?['imageLinks'])
+        : ImageLinks(smallThumbnail: '', thumbnail: '');
+    language = json?['language'] ?? ' ';
   }
 
   Map<String, dynamic> toJson() {
@@ -176,12 +141,10 @@ class VolumeInfo {
 }
 
 class IndustryIdentifiers {
-  IndustryIdentifiers({
-    required this.type,
-    required this.identifier,
-  });
-  late final String type;
-  late final String identifier;
+  String? type;
+  String? identifier;
+
+  IndustryIdentifiers({this.type, this.identifier});
 
   IndustryIdentifiers.fromJson(Map<String, dynamic> json) {
     type = json['type'] ?? '';
@@ -189,30 +152,28 @@ class IndustryIdentifiers {
   }
 
   Map<String, dynamic> toJson() {
-    final _data = <String, dynamic>{};
-    _data['type'] = type;
-    _data['identifier'] = identifier;
-    return _data;
+    final Map<String, dynamic> data = Map<String, dynamic>();
+    data['type'] = type;
+    data['identifier'] = identifier;
+    return data;
   }
 }
 
 class ImageLinks {
-  ImageLinks({
-    this.smallThumbnail,
-    this.thumbnail,
-  });
-  late final String? smallThumbnail;
-  late final String? thumbnail;
+  String? smallThumbnail;
+  String? thumbnail;
+
+  ImageLinks({this.smallThumbnail, this.thumbnail});
 
   ImageLinks.fromJson(Map<String, dynamic>? json) {
-    smallThumbnail = json?['smallThumbnail'] as String?;
-    thumbnail = json?['thumbnail'] as String?;
+    smallThumbnail = json?['smallThumbnail'];
+    thumbnail = json?['thumbnail'];
   }
 
   Map<String, dynamic> toJson() {
-    final _data = <String, dynamic>{};
-    _data['smallThumbnail'] = smallThumbnail ?? '';
-    _data['thumbnail'] = thumbnail ?? '';
-    return _data;
+    final Map<String, dynamic> data = Map<String, dynamic>();
+    data['smallThumbnail'] = smallThumbnail;
+    data['thumbnail'] = thumbnail;
+    return data;
   }
 }
