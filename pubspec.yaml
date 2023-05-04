@@ -83,6 +83,13 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
   - lib/API_KEY.env
+  - assets/people/ahrar.png
+  - assets/people/hamed.png
+  - assets/people/horam.png
+  - assets/people/osama.png
+  - assets/people/ramin.png
+  - assets/people/weng.png
+  - assets/people/zohreh.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

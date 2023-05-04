@@ -224,10 +224,12 @@ class HomeWidgetState extends State<HomeWidget> {
                                     imageUrl: bookModel
                                             .volumeInfo.imageLinks!.thumbnail ??
                                         '',
-                                    placeholder: (context, url) =>
-                                        LoadingAnimationWidget
-                                            .staggeredDotsWave(
-                                                color: Colors.indigo, size: 50),
+                                    placeholder: (context, url) => Center(
+                                          child: LoadingAnimationWidget
+                                              .staggeredDotsWave(
+                                                  color: Colors.indigo,
+                                                  size: 50),
+                                        ),
                                     errorWidget: (context, url, error) =>
                                         FadeInImage.assetNetwork(
                                           placeholder:
@@ -251,7 +253,6 @@ class HomeWidgetState extends State<HomeWidget> {
                                       stops: const [0.0, 0.4, 0.7, 1.0],
                                     ),
                                   ),
-                                  // Other properties of the container
                                 ),
                                 Positioned(
                                   bottom: 0,

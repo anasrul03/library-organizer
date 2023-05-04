@@ -77,58 +77,81 @@ class _BookCardState extends State<BookCard> {
                   final imageLinks = book['imageLinks'];
                   final title = book['title'];
 
-                  return Card(
-                    child: Stack(
-                      children: [
-                        CachedNetworkImage(
-                            height: cardHeight,
-                            imageUrl: imageLinks,
-                            fit: BoxFit.cover),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.9),
-                                Colors.black.withOpacity(0.6),
-                                Colors.black.withOpacity(0.3),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.4, 0.7, 1.0],
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              BookDetailsPage(isbn: book['ISBN']),
+                        ),
+                      ).then((value) {
+                        if (value != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Text(value),
+                              ),
+                              backgroundColor: Colors.indigo,
                             ),
-                          ),
-                          // Other properties of the container
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            context.read<FirestoreCubit>().deleteBook(
-                                isbn, imageLinks, categories, title);
-                          },
-                          icon: const Icon(
-                            Icons.remove_circle,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          left: 2,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            width: cardWidth,
-                            height: 55,
-                            child: Text(
-                              title,
-                              textAlign: TextAlign.left,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                          );
+                        }
+                      });
+                    },
+                    child: Card(
+                      child: Stack(
+                        children: [
+                          CachedNetworkImage(
+                              height: cardHeight,
+                              imageUrl: imageLinks,
+                              fit: BoxFit.cover),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.9),
+                                  Colors.black.withOpacity(0.6),
+                                  Colors.black.withOpacity(0.3),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.4, 0.7, 1.0],
                               ),
                             ),
+                            // Other properties of the container
                           ),
-                        )
-                      ],
+                          IconButton(
+                            onPressed: () {
+                              context.read<FirestoreCubit>().deleteBook(
+                                  isbn, imageLinks, categories, title);
+                            },
+                            icon: const Icon(
+                              Icons.remove_circle,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            left: 2,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              width: cardWidth,
+                              height: 55,
+                              child: Text(
+                                title,
+                                textAlign: TextAlign.left,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   );
                 },

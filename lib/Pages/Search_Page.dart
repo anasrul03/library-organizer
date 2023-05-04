@@ -23,6 +23,7 @@ class _BookSearchPageState extends State<BookSearchPage> {
   final ScrollController _scrollController = ScrollController();
   int _startIndex = 0;
   bool _isLoading = false;
+  bool _isMobileTeam = false;
 
   Future<void> _searchBooks(String searchTerm, int startIndex) async {
     String apiUrl =
@@ -36,6 +37,9 @@ class _BookSearchPageState extends State<BookSearchPage> {
       } else {
         _searchResults.addAll(newResults);
       }
+      if (_searchTerm == 'derivmobileteam') {
+        _isMobileTeam = true;
+      }
       _isLoading = false;
     });
   }
@@ -48,14 +52,6 @@ class _BookSearchPageState extends State<BookSearchPage> {
     _scrollController.addListener(() {
       if (_scrollController.position.maxScrollExtent ==
           _scrollController.position.pixels) {
-        // if (!_isLoading) {
-        //   setState(() {
-        //     _isLoading = true;
-        //     _startIndex += _maxResultsPerPage;
-        //   });
-        //   _searchBooks(_searchTerm, _startIndex);
-        // }
-
         {
           setState(() {
             _isLoading = true;
@@ -98,104 +94,253 @@ class _BookSearchPageState extends State<BookSearchPage> {
           },
         ),
       ),
-      body: _searchResults.isEmpty
+      body: _isMobileTeam
           ? SingleChildScrollView(
-              child: Center(
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 140,
-                    ),
-                    // CachedNetworkImage(
-                    //   imageUrl:
-                    //       'https://cdn.dribbble.com/users/1785190/screenshots/3906047/search.gif',
-                    // ),
-                    LoadingAnimationWidget.discreteCircle(
-                        color: Colors.indigo, size: 150),
-                    const SizedBox(
-                      height: 50,
-                    ),
-                    const Text(
-                      'Input search query above!',
-                      style: TextStyle(
-                          color: Colors.indigo,
-                          fontSize: 30,
-                          fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : ListView.builder(
-              itemCount: _searchResults.length + (_isLoading ? 1 : 0),
-              itemBuilder: (BuildContext context, int index) {
-                Map<String, dynamic> book = _searchResults[index]['volumeInfo'];
-                if (book['industryIdentifiers'] != null &&
-                    book['industryIdentifiers'][0]['identifier'] != null &&
-                    book['industryIdentifiers'][0]['type'] != 'OTHER' &&
-                    _searchResults[index]['volumeInfo'] != <String>[] &&
-                    _searchResults[index]['volumeInfo'] != <String>[]) {
-                  if (index == _searchResults.length) {
-                    return Center(
-                      child: LoadingAnimationWidget.staggeredDotsWave(
-                          color: Colors.indigo, size: 50),
-                    );
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BookDetailsPage(
-                                isbn: book['industryIdentifiers'][0]
-                                    ['identifier']),
-                          ),
-                        ).then((value) {
-                          if (value != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Text(value),
-                                ),
-                                backgroundColor: Colors.indigo,
-                              ),
-                            );
-                          }
-                        });
-                      },
-                      child: ListTile(
-                        leading: SizedBox(
-                          width: 50,
-                          child: book['imageLinks'] != null
-                              ? CachedNetworkImage(
-                                  imageUrl:
-                                      book['imageLinks']['thumbnail'] ?? '',
-                                  placeholder: (context, url) =>
-                                      LoadingAnimationWidget.staggeredDotsWave(
-                                          color: Colors.indigo, size: 30),
-                                  errorWidget: (context, url, error) =>
-                                      FadeInImage.assetNetwork(
-                                    placeholder:
-                                        'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
-                                    image:
-                                        'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : Container(),
+              child: Column(
+                children: [
+                  Stack(alignment: Alignment.center, children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SizedBox(
+                        height: 100,
+                        width: double.infinity,
+                        child: Image.asset(
+                          'assets/people/ahrar.png',
+                          fit: BoxFit.cover,
                         ),
-                        title: Text(book['title'] ?? ''),
                       ),
                     ),
-                  );
-                } else {
-                  return Container();
-                }
-              },
-            ),
+                    Text(
+                      'Ahrar',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 90,
+                          color: Colors.indigo.withOpacity(0.8)),
+                    )
+                  ]),
+                  Stack(alignment: Alignment.center, children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SizedBox(
+                        height: 100,
+                        width: double.infinity,
+                        child: Image.asset(
+                          'assets/people/hamed.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'Hamed',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 90,
+                          color: Colors.indigo.withOpacity(0.8)),
+                    )
+                  ]),
+                  Stack(alignment: Alignment.center, children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SizedBox(
+                        height: 100,
+                        width: double.infinity,
+                        child: Image.asset(
+                          'assets/people/horam.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'Horam',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 90,
+                          color: Colors.indigo.withOpacity(0.8)),
+                    )
+                  ]),
+                  Stack(alignment: Alignment.center, children: [
+                    Padding(
+                      padding: const EdgeInsets.all(18.0),
+                      child: SizedBox(
+                        height: 100,
+                        width: double.infinity,
+                        child: Image.asset(
+                          'assets/people/osama.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'Osama',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 90,
+                          color: Colors.indigo.withOpacity(0.8)),
+                    )
+                  ]),
+                  Stack(alignment: Alignment.center, children: [
+                    Padding(
+                      padding: const EdgeInsets.all(18.0),
+                      child: SizedBox(
+                        height: 100,
+                        width: double.infinity,
+                        child: Image.asset(
+                          'assets/people/ramin.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'Ramin',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 90,
+                          color: Colors.indigo.withOpacity(0.8)),
+                    )
+                  ]),
+                  Stack(alignment: Alignment.center, children: [
+                    Padding(
+                      padding: const EdgeInsets.all(18.0),
+                      child: SizedBox(
+                        height: 100,
+                        width: double.infinity,
+                        child: Image.asset(
+                          'assets/people/weng.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'Weng',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 90,
+                          color: Colors.indigo.withOpacity(0.8)),
+                    )
+                  ]),
+                  Stack(alignment: Alignment.center, children: [
+                    Padding(
+                      padding: const EdgeInsets.all(18.0),
+                      child: SizedBox(
+                        height: 100,
+                        width: double.infinity,
+                        child: Image.asset('assets/people/zohreh.png',
+                            fit: BoxFit.cover,
+                            alignment: const FractionalOffset(1, 0.2)),
+                      ),
+                    ),
+                    Text(
+                      'Zohreh',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 90,
+                          color: Colors.indigo.withOpacity(0.8)),
+                    )
+                  ])
+                ],
+              ),
+            )
+          : _searchResults.isEmpty
+              ? SingleChildScrollView(
+                  child: Center(
+                    child: Column(
+                      children: [
+                        const SizedBox(
+                          height: 140,
+                        ),
+                        // CachedNetworkImage(
+                        //   imageUrl:
+                        //       'https://cdn.dribbble.com/users/1785190/screenshots/3906047/search.gif',
+                        // ),
+                        LoadingAnimationWidget.discreteCircle(
+                            color: Colors.indigo, size: 150),
+                        const SizedBox(
+                          height: 50,
+                        ),
+                        const Text(
+                          'Input search query above!',
+                          style: TextStyle(
+                              color: Colors.indigo,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _searchResults.length + (_isLoading ? 1 : 0),
+                  itemBuilder: (BuildContext context, int index) {
+                    Map<String, dynamic> book =
+                        _searchResults[index]['volumeInfo'];
+                    if (book['industryIdentifiers'] != null &&
+                        book['industryIdentifiers'][0]['identifier'] != null &&
+                        book['industryIdentifiers'][0]['type'] != 'OTHER' &&
+                        _searchResults[index]['volumeInfo'] != <String>[] &&
+                        _searchResults[index]['volumeInfo'] != <String>[]) {
+                      if (index == _searchResults.length) {
+                        return Center(
+                          child: LoadingAnimationWidget.staggeredDotsWave(
+                              color: Colors.indigo, size: 50),
+                        );
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BookDetailsPage(
+                                    isbn: book['industryIdentifiers'][0]
+                                        ['identifier']),
+                              ),
+                            ).then((value) {
+                              if (value != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Text(value),
+                                    ),
+                                    backgroundColor: Colors.indigo,
+                                  ),
+                                );
+                              }
+                            });
+                          },
+                          child: ListTile(
+                            leading: SizedBox(
+                              width: 50,
+                              child: book['imageLinks'] != null
+                                  ? CachedNetworkImage(
+                                      imageUrl:
+                                          book['imageLinks']['thumbnail'] ?? '',
+                                      placeholder: (context, url) =>
+                                          LoadingAnimationWidget
+                                              .staggeredDotsWave(
+                                                  color: Colors.indigo,
+                                                  size: 30),
+                                      errorWidget: (context, url, error) =>
+                                          FadeInImage.assetNetwork(
+                                        placeholder:
+                                            'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                                        image:
+                                            'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : Container(),
+                            ),
+                            title: Text(book['title'] ?? ''),
+                          ),
+                        ),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
+                ),
     );
   }
 }

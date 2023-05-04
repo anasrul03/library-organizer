@@ -84,16 +84,16 @@ class BookDetailsState extends State<BookDetailsPage> {
                   showRatingBar = true;
                 }
 
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Column(
+                return Stack(
+                  children: [
+                    SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
                               children: [
                                 CachedNetworkImage(
                                   imageUrl: bookModel
@@ -101,7 +101,7 @@ class BookDetailsState extends State<BookDetailsPage> {
                                       '',
                                   placeholder: (context, url) =>
                                       LoadingAnimationWidget.staggeredDotsWave(
-                                          color: Colors.indigo, size: 50),
+                                          color: Colors.indigo, size: 80),
                                   errorWidget: (context, url, error) =>
                                       FadeInImage.assetNetwork(
                                     placeholder:
@@ -115,156 +115,163 @@ class BookDetailsState extends State<BookDetailsPage> {
                                   width: 150,
                                   height: 200,
                                 ),
-                                const SizedBox(height: 6),
-                                Text('ISBN: //${widget.isbn}'),
-                                const SizedBox(height: 20),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SizedBox(
+                                    width: 200,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          toRender.isNotEmpty
+                                              ? bookModel.volumeInfo!.title
+                                              : '',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                              color: Colors.indigo),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Container(
+                                          child: showRatingBar
+                                              ? RatingBar.builder(
+                                                  initialRating: bookModel
+                                                      .volumeInfo
+                                                      ?.averageRating!
+                                                      .toDouble(),
+                                                  minRating: 0,
+                                                  direction: Axis.horizontal,
+                                                  allowHalfRating: true,
+                                                  itemCount: 5,
+                                                  itemSize: 20,
+                                                  itemPadding: const EdgeInsets
+                                                      .symmetric(horizontal: 1),
+                                                  itemBuilder: (context, _) =>
+                                                      const Icon(
+                                                    Icons.star,
+                                                    color: Colors.amber,
+                                                  ),
+                                                  onRatingUpdate: (rating) {},
+                                                )
+                                              : const SizedBox.shrink(),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Text(
+                                          toRender.isNotEmpty
+                                              ? 'Author: ${(bookModel.volumeInfo?.authors.join(', '))}'
+                                              : '',
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Text(
+                                          toRender.isNotEmpty
+                                              ? 'Categories: ${(bookModel.volumeInfo?.categories.join(', '))}'
+                                              : '',
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Text(toRender.isNotEmpty
+                                            ? 'Book Publisher: ${bookModel.volumeInfo?.publisher}'
+                                            : ''),
+                                        const SizedBox(height: 20),
+                                        Text(toRender.isNotEmpty
+                                            ? 'Date of Publish: ${bookModel.volumeInfo?.publishedDate}'
+                                            : ''),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                width: 200,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      toRender.isNotEmpty
-                                          ? bookModel.volumeInfo!.title
-                                          : '',
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Container(
-                                      child: showRatingBar
-                                          ? RatingBar.builder(
-                                              initialRating: bookModel
-                                                  .volumeInfo?.averageRating!
-                                                  .toDouble(),
-                                              minRating: 0,
-                                              direction: Axis.horizontal,
-                                              allowHalfRating: true,
-                                              itemCount: 5,
-                                              itemSize: 20,
-                                              itemPadding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 1),
-                                              itemBuilder: (context, _) =>
-                                                  const Icon(
-                                                Icons.star,
-                                                color: Colors.amber,
-                                              ),
-                                              onRatingUpdate: (rating) {},
-                                            )
-                                          : const SizedBox.shrink(),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    Text(
-                                      toRender.isNotEmpty
-                                          ? 'Author: ${(bookModel.volumeInfo?.authors.join(', '))}'
-                                          : '',
-                                    ),
-                                    const SizedBox(height: 20),
-                                    Text(
-                                      toRender.isNotEmpty
-                                          ? 'Categories: ${(bookModel.volumeInfo?.categories.join(', '))}'
-                                          : '',
-                                    ),
-                                    const SizedBox(height: 20),
-                                    Text(toRender.isNotEmpty
-                                        ? 'Book Publisher: ${bookModel.volumeInfo?.publisher}'
-                                        : ''),
-                                    const SizedBox(height: 20),
-                                    Text(toRender.isNotEmpty
-                                        ? 'Date of Publish: ${bookModel.volumeInfo?.publishedDate}'
-                                        : ''),
-                                  ],
-                                ),
+                            const SizedBox(height: 20),
+                            Text(toRender.isNotEmpty
+                                ? 'Book Description: ${bookModel.volumeInfo?.description}'
+                                : ''),
+                            const SizedBox(height: 20),
+                            Text('ISBN: //${widget.isbn}'),
+                            const SizedBox(height: 20),
+                            Text(toRender.isNotEmpty
+                                ? 'Book Language: ${bookModel.volumeInfo?.language}'
+                                : ''),
+                            const SizedBox(height: 20),
+                            Text(toRender.isNotEmpty
+                                ? 'Number of Pages: ${bookModel.volumeInfo?.pageCount}'
+                                : ''),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blueGrey,
                               ),
+                              onPressed: () => setState(() {
+                                print(toLaunch);
+                                _launched = _launchBookInfoUrl(toLaunch);
+                              }),
+                              child: const Text('Stats for nerds'),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.indigo,
+                              ),
+                              onPressed: () async {
+                                final bookDetailsState = cubit.state;
+                                if (bookDetailsState is BookDetailsLoaded) {
+                                  final items =
+                                      bookDetailsState.apiBookDetails.items;
+                                  final canonicalVolumeLink = items.isNotEmpty
+                                      ? items[0].volumeInfo?.canonicalVolumeLink
+                                      : null;
+                                  if (canonicalVolumeLink != null) {
+                                    if (await canLaunchUrl(
+                                        Uri.parse(canonicalVolumeLink))) {
+                                      await launchUrl(
+                                          Uri.parse(canonicalVolumeLink));
+                                    } else {
+                                      throw 'Could not launch $canonicalVolumeLink';
+                                    }
+                                  }
+                                }
+                              },
+                              child: const Text('Check Book/e-Book Info'),
                             ),
                           ],
                         ),
-                        Text(toRender.isNotEmpty
-                            ? 'Book Description: ${bookModel.volumeInfo?.description}'
-                            : ''),
-                        const SizedBox(height: 20),
-                        Text(toRender.isNotEmpty
-                            ? 'Book Language: ${bookModel.volumeInfo?.language}'
-                            : ''),
-                        const SizedBox(height: 20),
-                        Text(toRender.isNotEmpty
-                            ? 'Number of Pages: ${bookModel.volumeInfo?.pageCount}'
-                            : ''),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.indigo,
-                          ),
-                          onPressed: () async {
-                            final bookDetailsState = cubit.state;
-                            if (bookDetailsState is BookDetailsLoaded) {
-                              final items =
-                                  bookDetailsState.apiBookDetails.items;
-                              final canonicalVolumeLink = items.isNotEmpty
-                                  ? items[0].volumeInfo?.canonicalVolumeLink
-                                  : null;
-                              if (canonicalVolumeLink != null) {
-                                if (await canLaunchUrl(
-                                    Uri.parse(canonicalVolumeLink))) {
-                                  await launchUrl(
-                                      Uri.parse(canonicalVolumeLink));
-                                } else {
-                                  throw 'Could not launch $canonicalVolumeLink';
-                                }
-                              }
-                            }
-                          },
-                          child: const Text('Check Book/e-Book Info'),
-                        ),
-                        BlocBuilder<AuthRepo, AuthState>(
-                          builder: (context, state) {
-                            return state.user!.email == null
-                                ? ElevatedButton(
-                                    onPressed: null,
-                                    child: Text("Sign in to add"))
-                                : BlocBuilder<FirestoreCubit, FirestoreState>(
-                                    builder: (context, state) {
-                                      return ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.indigo,
-                                        ),
-                                        onPressed: () {
-                                          print("Added");
-                                          context.read<FirestoreCubit>().addBook(
-                                              context,
-                                              "${widget.isbn}",
-                                              "${bookModel.volumeInfo?.imageLinks.thumbnail}",
-                                              "${(bookModel.volumeInfo?.categories.join(', '))}",
-                                              "${bookModel.volumeInfo?.title}");
-                                        },
-                                        child: Text('Add to Library'),
-                                      );
-                                    },
-                                  );
-                          },
-                        ),
-                        const SizedBox(
-                          height: 100,
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueGrey,
-                          ),
-                          onPressed: () => setState(() {
-                            print(toLaunch);
-                            _launched = _launchBookInfoUrl(toLaunch);
-                          }),
-                          child: const Text('Stats for nerds'),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    Positioned(
+                      bottom: 6,
+                      right: 16,
+                      child: BlocBuilder<AuthRepo, AuthState>(
+                        builder: (context, state) {
+                          return state.user!.email == null
+                              ? ElevatedButton(
+                                  onPressed: null,
+                                  child: Text("Sign in to add"))
+                              : BlocBuilder<FirestoreCubit, FirestoreState>(
+                                  builder: (context, state) {
+                                    return FloatingActionButton(
+                                      backgroundColor: Colors.indigo,
+                                      onPressed: () {
+                                        print("Added");
+                                        context.read<FirestoreCubit>().addBook(
+                                            context,
+                                            "${widget.isbn}",
+                                            "${bookModel.volumeInfo?.imageLinks.thumbnail}",
+                                            "${(bookModel.volumeInfo?.categories.join(', '))}",
+                                            "${bookModel.volumeInfo?.title}");
+                                      },
+                                      child: Icon(
+                                        Icons.add_task,
+                                        size: 40,
+                                      ),
+                                    );
+                                  },
+                                );
+                        },
+                      ),
+                    ),
+                  ],
                 );
               } else if (state is BookDetailsError) {
                 Navigator.pop(context,
