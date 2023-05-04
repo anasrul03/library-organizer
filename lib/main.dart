@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lib_org/Components/navigationDummy.dart';
 import 'package:lib_org/Firebase_Auth/Login_Page.dart';
+import 'package:lib_org/Firebase_Auth/SignUp_Page.dart';
 import 'package:lib_org/Pages/BookDetails_Page.dart';
+import 'package:lib_org/Pages/LibrarySetting_Page.dart';
 import 'package:lib_org/Services/ApiStates/ApiDetailsStates.dart';
 import 'package:lib_org/Pages/Home_Page.dart';
 import 'package:lib_org/Services/ApiStates/ApiListStates.dart';
@@ -14,6 +16,8 @@ import 'package:lib_org/Services/Firebase_Auth.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
 import 'package:lib_org/cubit/signup_cubit.dart';
 import 'package:lib_org/firebase_options.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -25,7 +29,43 @@ Future main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: MyApp(),
+    ),
+  );
+}
+
+class ThemeProvider extends ChangeNotifier {
+  bool _isDarkModeOn = false;
+
+  bool get isDarkModeOn => _isDarkModeOn;
+
+  bool _isGridEven = false;
+
+  bool get isGridEven => _isGridEven;
+
+  // void toggleTheme() {
+  //   _isDarkModeOn = !_isDarkModeOn;
+  //   notifyListeners();
+  // }
+  set isDarkModeOn(bool value) {
+    _isDarkModeOn = value;
+    notifyListeners();
+  }
+
+  set isGridEven(bool value) {
+    _isGridEven = value;
+    notifyListeners();
+  }
+}
+
+Future<void> requestPermission() async {
+  final status = await Permission.storage.request();
+  if (status.isDenied) {
+    print(status.index);
+  }
 }
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -62,13 +102,14 @@ class _MyAppState extends State<MyApp> {
           ),
         ],
         child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(primaryColor: Colors.indigo),
-          title: 'Flutter Demo',
-          home: MyHomePage(
-            title: 'Home',
-          ),
-        ),
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData.light(),
+            darkTheme: ThemeData.dark(),
+            themeMode: context.watch<ThemeProvider>().isDarkModeOn
+                ? ThemeMode.dark
+                : ThemeMode.light,
+            title: 'Flutter Demo',
+            home: HomePage()),
       ),
     );
   }

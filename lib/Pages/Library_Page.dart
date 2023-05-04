@@ -8,6 +8,7 @@ import 'package:lib_org/cubit/auth_state.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../cubit/firestore_cubit.dart';
+import '../main.dart';
 import 'BookDetails_Page.dart';
 
 class LibraryPage extends StatefulWidget {
@@ -132,7 +133,8 @@ class _BookCardState extends State<BookCard> {
                   );
                 },
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: columnNum,
+                  crossAxisCount:
+                      context.watch<ThemeProvider>().isGridEven ? 2 : 3,
                   childAspectRatio: 0.6,
                   mainAxisSpacing: 0,
                   crossAxisSpacing: 0,
