@@ -80,7 +80,6 @@ class _BookSearchPageState extends State<BookSearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.indigo,
         title: TextField(
@@ -105,16 +104,21 @@ class _BookSearchPageState extends State<BookSearchPage> {
                 child: Column(
                   children: [
                     const SizedBox(
-                      height: 40,
+                      height: 140,
                     ),
-                    CachedNetworkImage(
-                      imageUrl:
-                          'https://cdn.dribbble.com/users/1785190/screenshots/3906047/search.gif',
+                    // CachedNetworkImage(
+                    //   imageUrl:
+                    //       'https://cdn.dribbble.com/users/1785190/screenshots/3906047/search.gif',
+                    // ),
+                    LoadingAnimationWidget.discreteCircle(
+                        color: Colors.indigo, size: 150),
+                    const SizedBox(
+                      height: 50,
                     ),
                     const Text(
                       'Input search query above!',
                       style: TextStyle(
-                          color: Colors.blue,
+                          color: Colors.indigo,
                           fontSize: 30,
                           fontWeight: FontWeight.w600),
                     ),

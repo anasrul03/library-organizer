@@ -6,6 +6,7 @@ import 'package:lib_org/Pages/Search_Page.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import '../Services/ApiServices/ApiBookList.dart';
 import '../Services/ApiStates/ApiListStates.dart';
+import '../main.dart';
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({Key? key}) : super(key: key);
@@ -76,7 +77,7 @@ class HomeWidgetState extends State<HomeWidget> {
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 140,
+                    fontSize: 120,
                   ),
                 ),
               ),
@@ -101,7 +102,7 @@ class HomeWidgetState extends State<HomeWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 DropdownButton<String>(
-                  hint: const Text('Dicover something new'),
+                  hint: const Text('Discover something new'),
                   value: selectedGenre,
                   onChanged: (String? value) {
                     setState(() {
@@ -162,13 +163,12 @@ class HomeWidgetState extends State<HomeWidget> {
                   );
                 }
                 if (toRender.isNotEmpty) {
-                  if (toRender.contains('ISBN_13') ||
-                      toRender.contains('ISBN_10')) {
+                  if (toRender.any((item) => item.volumeInfo.industryIdentifiers
+                      .any((id) =>
+                          id.type == 'ISBN_13' || id.type == 'ISBN_10'))) {
                     toRender.removeWhere((item) =>
-                        item.volumeInfo.industryIdentifiers[0].type !=
-                            'ISBN_13' &&
-                        item.volumeInfo.industryIdentifiers[0].type !=
-                            'ISBN_10');
+                        item.volumeInfo.industryIdentifiers.every((id) =>
+                            id.type != 'ISBN_13' && id.type != 'ISBN_10'));
                   }
                 }
 
@@ -177,8 +177,9 @@ class HomeWidgetState extends State<HomeWidget> {
                 }
                 return GridView.builder(
                   controller: _scrollController,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount:
+                        context.watch<ThemeProvider>().isGridEven ? 2 : 3,
                     childAspectRatio: 0.6,
                     crossAxisSpacing: 2,
                   ),
@@ -215,39 +216,100 @@ class HomeWidgetState extends State<HomeWidget> {
                               }
                             });
                           },
-                          child: Column(
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: bookModel.volumeInfo.imageLinks!
-                                        .smallThumbnail ??
-                                    '',
-                                placeholder: (context, url) =>
-                                    LoadingAnimationWidget.staggeredDotsWave(
-                                        color: Colors.indigo, size: 50),
-                                errorWidget: (context, url, error) =>
-                                    FadeInImage.assetNetwork(
-                                  placeholder:
-                                      'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
-                                  image:
-                                      'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
-                                  fit: BoxFit.cover,
+                          child: Card(
+                            child: Stack(
+                              children: [
+                                CachedNetworkImage(
+                                    height: 400,
+                                    imageUrl: bookModel
+                                            .volumeInfo.imageLinks!.thumbnail ??
+                                        '',
+                                    placeholder: (context, url) =>
+                                        LoadingAnimationWidget
+                                            .staggeredDotsWave(
+                                                color: Colors.indigo, size: 50),
+                                    errorWidget: (context, url, error) =>
+                                        FadeInImage.assetNetwork(
+                                          placeholder:
+                                              'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                                          image:
+                                              'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                                          fit: BoxFit.cover,
+                                        ),
+                                    fit: BoxFit.cover),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.topCenter,
+                                      colors: [
+                                        Colors.black.withOpacity(0.9),
+                                        Colors.black.withOpacity(0.6),
+                                        Colors.black.withOpacity(0.3),
+                                        Colors.transparent,
+                                      ],
+                                      stops: const [0.0, 0.4, 0.7, 1.0],
+                                    ),
+                                  ),
+                                  // Other properties of the container
                                 ),
-                                // fit: BoxFit.cover,
-                                height: 160,
-                                width: 120,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                bookModel.volumeInfo.title ?? "",
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black54),
-                              ),
-                            ],
-                          ));
+                                Positioned(
+                                  bottom: 0,
+                                  left: 2,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    width: 120,
+                                    height: 55,
+                                    child: Text(
+                                      bookModel.volumeInfo.title ?? "",
+                                      textAlign: TextAlign.left,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          )
+                          // child: Column(
+                          //   children: [
+                          //     CachedNetworkImage(
+                          //       imageUrl: bookModel
+                          //               .volumeInfo.imageLinks!.thumbnail ??
+                          //           '',
+                          //       placeholder: (context, url) =>
+                          //           LoadingAnimationWidget.staggeredDotsWave(
+                          //               color: Colors.indigo, size: 50),
+                          //       errorWidget: (context, url, error) =>
+                          //           FadeInImage.assetNetwork(
+                          //         placeholder:
+                          //             'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                          //         image:
+                          //             'https://islandpress.org/sites/default/files/default_book_cover_2015.jpg',
+                          //         fit: BoxFit.cover,
+                          //       ),
+                          //       // fit: BoxFit.cover,
+                          //       height: 160,
+                          //       width: 120,
+                          //     ),
+                          //     const SizedBox(height: 8),
+                          //     Text(
+                          //       bookModel.volumeInfo.title ?? "",
+                          //       maxLines: 2,
+                          //       overflow: TextOverflow.ellipsis,
+                          //       textAlign: TextAlign.center,
+                          //       style: const TextStyle(
+                          //           fontWeight: FontWeight.w600,
+                          //           color: Colors.black54),
+                          //     ),
+                          //   ],
+                          // )
+                          );
                     }
                     return null;
                   },

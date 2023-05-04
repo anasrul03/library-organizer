@@ -88,6 +88,7 @@ class VolumeInfo {
     required this.maturityRating,
     required this.imageLinks,
     required this.language,
+    required this.canonicalVolumeLink,
   });
   late final String title;
   late final List<String> authors;
@@ -101,6 +102,7 @@ class VolumeInfo {
   late final String maturityRating;
   late final ImageLinks imageLinks;
   late final String language;
+  late final String canonicalVolumeLink;
 
   VolumeInfo.fromJson(Map<String, dynamic>? json) {
     title = json?['title'] ?? ' ';
@@ -119,6 +121,7 @@ class VolumeInfo {
         ? ImageLinks.fromJson(json?['imageLinks'])
         : ImageLinks(smallThumbnail: '', thumbnail: '');
     language = json?['language'] ?? ' ';
+    canonicalVolumeLink = json?['canonicalVolumeLink'] ?? ' ';
   }
 
   Map<String, dynamic> toJson() {
@@ -136,6 +139,7 @@ class VolumeInfo {
     _data['maturityRating'] = maturityRating;
     _data['imageLinks'] = imageLinks.toJson();
     _data['language'] = language;
+    _data['canonicalVolumeLink'] = canonicalVolumeLink;
     return _data;
   }
 }

@@ -8,6 +8,7 @@ import 'package:lib_org/cubit/auth_cubit.dart';
 import 'package:lib_org/cubit/auth_state.dart';
 import 'package:lib_org/cubit/firestore_cubit.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../Services/ApiServices/ApiBookDetails.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -25,6 +26,7 @@ class BookDetailsState extends State<BookDetailsPage> {
   late BookDetailsCubit cubit;
   List<Items> toRender = [];
   bool isAnon = false;
+  Future<void>? _launched;
 
   @override
   void initState() {
@@ -32,6 +34,14 @@ class BookDetailsState extends State<BookDetailsPage> {
     cubit = BlocProvider.of<BookDetailsCubit>(context);
     cubit.fetchBookDetails(widget.isbn);
     setState(() {});
+  }
+
+  Future<void> _launchBookInfoUrl(Uri infoUrl) async {
+    if (await launchUrl(infoUrl)) {
+      await launchUrl(infoUrl);
+    } else {
+      throw 'Could not launch $infoUrl';
+    }
   }
 
   @override
@@ -64,6 +74,11 @@ class BookDetailsState extends State<BookDetailsPage> {
               }
               if (toRender.isNotEmpty) {
                 final Items bookModel = toRender[0];
+
+                final Uri toLaunch = Uri(
+                    scheme: 'https',
+                    host: '',
+                    path: bookModel.selfLink?.replaceAll("https://", ""));
                 bool showRatingBar = false;
                 if (bookModel.volumeInfo?.averageRating != null) {
                   showRatingBar = true;
@@ -81,8 +96,8 @@ class BookDetailsState extends State<BookDetailsPage> {
                             Column(
                               children: [
                                 CachedNetworkImage(
-                                  imageUrl: bookModel.volumeInfo?.imageLinks
-                                          .smallThumbnail ??
+                                  imageUrl: bookModel
+                                          .volumeInfo?.imageLinks.thumbnail ??
                                       '',
                                   placeholder: (context, url) =>
                                       LoadingAnimationWidget.staggeredDotsWave(
@@ -182,21 +197,49 @@ class BookDetailsState extends State<BookDetailsPage> {
                             ? 'Number of Pages: ${bookModel.volumeInfo?.pageCount}'
                             : ''),
                         const SizedBox(height: 20),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.indigo,
+                          ),
+                          onPressed: () async {
+                            final bookDetailsState = cubit.state;
+                            if (bookDetailsState is BookDetailsLoaded) {
+                              final items =
+                                  bookDetailsState.apiBookDetails.items;
+                              final canonicalVolumeLink = items.isNotEmpty
+                                  ? items[0].volumeInfo?.canonicalVolumeLink
+                                  : null;
+                              if (canonicalVolumeLink != null) {
+                                if (await canLaunchUrl(
+                                    Uri.parse(canonicalVolumeLink))) {
+                                  await launchUrl(
+                                      Uri.parse(canonicalVolumeLink));
+                                } else {
+                                  throw 'Could not launch $canonicalVolumeLink';
+                                }
+                              }
+                            }
+                          },
+                          child: const Text('Check Book/e-Book Info'),
+                        ),
                         BlocBuilder<AuthRepo, AuthState>(
                           builder: (context, state) {
                             return state.user!.email == null
                                 ? ElevatedButton(
                                     onPressed: null,
-                                    child: Text("Sigin to add"))
+                                    child: Text("Sign in to add"))
                                 : BlocBuilder<FirestoreCubit, FirestoreState>(
                                     builder: (context, state) {
                                       return ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.indigo,
+                                        ),
                                         onPressed: () {
                                           print("Added");
                                           context.read<FirestoreCubit>().addBook(
                                               context,
                                               "${widget.isbn}",
-                                              "${bookModel.volumeInfo?.imageLinks.smallThumbnail}",
+                                              "${bookModel.volumeInfo?.imageLinks.thumbnail}",
                                               "${(bookModel.volumeInfo?.categories.join(', '))}",
                                               "${bookModel.volumeInfo?.title}");
                                         },
@@ -205,7 +248,20 @@ class BookDetailsState extends State<BookDetailsPage> {
                                     },
                                   );
                           },
-                        )
+                        ),
+                        const SizedBox(
+                          height: 100,
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueGrey,
+                          ),
+                          onPressed: () => setState(() {
+                            print(toLaunch);
+                            _launched = _launchBookInfoUrl(toLaunch);
+                          }),
+                          child: const Text('Stats for nerds'),
+                        ),
                       ],
                     ),
                   ),

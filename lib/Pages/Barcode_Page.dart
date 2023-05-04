@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:loading_animations/loading_animations.dart';
 import 'BookDetails_Page.dart';
 
 class BarcodePage extends StatefulWidget {
@@ -88,20 +90,23 @@ class BarcodePageState extends State<BarcodePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
               const SizedBox(
-                height: 160,
+                height: 200,
               ),
-              CachedNetworkImage(
-                imageUrl:
-                    'https://media.tenor.com/8E3SIU76kHgAAAAC/barcode-scan.gif',
-              ),
+              // CachedNetworkImage(
+              //   imageUrl:
+              //       'https://media.tenor.com/8E3SIU76kHgAAAAC/barcode-scan.gif',
+              // ),
+              LoadingBouncingGrid.circle(
+                  backgroundColor: Colors.indigo,
+                  // borderColor: Colors.indigoAccent,
+                  size: 240),
               const SizedBox(
-                height: 20,
+                height: 60,
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
