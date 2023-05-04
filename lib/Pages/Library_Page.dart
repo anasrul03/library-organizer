@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lib_org/Components/RackSelectableButtonList.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
 import 'package:lib_org/cubit/auth_state.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -24,8 +26,29 @@ class _LibraryPageState extends State<LibraryPage> {
       create: (context) => FirestoreCubit(context.read<AuthRepo>().state),
       child: BlocBuilder<FirestoreCubit, FirestoreState>(
         builder: (context, state) {
-          return Scaffold(
-            body: BookCard(),
+          return DefaultTabController(
+            length: 4,
+            child: Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.indigo,
+                centerTitle: true,
+                title: Text("My Library"),
+                bottom: const TabBar(tabs: [
+                  Tab(icon: Text("Reading")),
+                  Tab(icon: Text("Wishlist")),
+                  Tab(icon: Text("Completed")),
+                  Tab(icon: Text("Favorites")),
+                ]),
+              ),
+              body: const TabBarView(
+                children: [
+                  BookCard(tableName: "Reading"),
+                  BookCard(tableName: "Wishlist"),
+                  BookCard(tableName: "Completed"),
+                  BookCard(tableName: "Favorites")
+                ],
+              ),
+            ),
           );
         },
       ),
@@ -34,7 +57,8 @@ class _LibraryPageState extends State<LibraryPage> {
 }
 
 class BookCard extends StatefulWidget {
-  const BookCard({Key? key}) : super(key: key);
+  final String tableName;
+  const BookCard({Key? key, required this.tableName}) : super(key: key);
 
   @override
   State<BookCard> createState() => _BookCardState();
@@ -44,10 +68,16 @@ class _BookCardState extends State<BookCard> {
   final double cardWidth = 120;
   final double cardHeight = 400;
   final int columnNum = 3;
+  final String assetName = './lib/assets/empty.svg';
+  final TextStyle title = const TextStyle(
+      fontWeight: FontWeight.bold, fontSize: 26, color: Colors.indigo);
+  final TextStyle subtitle = const TextStyle(
+      fontWeight: FontWeight.normal, fontSize: 15, color: Colors.grey);
+
   @override
   void initState() {
     super.initState();
-    context.read<FirestoreCubit>().fetchData();
+    context.read<FirestoreCubit>().fetchData(widget.tableName);
   }
 
   @override
@@ -61,82 +91,113 @@ class _BookCardState extends State<BookCard> {
               return const Center(child: CircularProgressIndicator());
             } else if (state is FirestoreError) {
               return Center(
-                child: Text(
-                  state.errorMessage,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              );
-            } else if (state is FirestoreFetchSuccess) {
-              return GridView.builder(
-                itemCount: state.bookLibraries.myBooks.length,
-                itemBuilder: (context, index) {
-                  final book = state.bookLibraries.myBooks[index];
-                  final isbn = book['ISBN'];
-                  final categories = book['categories'];
-                  final imageLinks = book['imageLinks'];
-                  final title = book['title'];
-
-                  return Card(
-                    child: Stack(
-                      children: [
-                        CachedNetworkImage(
-                            height: cardHeight,
-                            imageUrl: imageLinks,
-                            fit: BoxFit.cover),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.9),
-                                Colors.black.withOpacity(0.6),
-                                Colors.black.withOpacity(0.3),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.4, 0.7, 1.0],
-                            ),
-                          ),
-                          // Other properties of the container
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            context.read<FirestoreCubit>().deleteBook(
-                                isbn, imageLinks, categories, title);
-                          },
-                          icon: const Icon(
-                            Icons.remove_circle,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          left: 2,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            width: cardWidth,
-                            height: 55,
-                            child: Text(
-                              title,
-                              textAlign: TextAlign.left,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    assetName,
+                    width: 200,
+                    height: 200,
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  Text(
+                    "There is no book added yet",
+                    style: title,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    width: 300,
+                    child: Text(
+                      "You can add book in library directly from details page",
+                      style: subtitle,
+                      textAlign: TextAlign.center,
                     ),
-                  );
-                },
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: columnNum,
-                  childAspectRatio: 0.6,
-                  mainAxisSpacing: 0,
-                  crossAxisSpacing: 0,
-                ),
+                  ),
+                ],
+              ));
+            } else if (state is FirestoreFetchSuccess) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const RackSelectableButtonList(),
+                  Expanded(
+                    child: GridView.builder(
+                      itemCount: state.bookLibraries.myBooks.length,
+                      itemBuilder: (context, index) {
+                        final book = state.bookLibraries.myBooks[index];
+                        final isbn = book['ISBN'];
+                        final categories = book['categories'];
+                        final imageLinks = book['imageLinks'];
+                        final title = book['title'];
+
+                        return Card(
+                          child: Stack(
+                            children: [
+                              CachedNetworkImage(
+                                  height: cardHeight,
+                                  imageUrl: imageLinks,
+                                  fit: BoxFit.cover),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                    colors: [
+                                      Colors.black.withOpacity(0.9),
+                                      Colors.black.withOpacity(0.6),
+                                      Colors.black.withOpacity(0.3),
+                                      Colors.transparent,
+                                    ],
+                                    stops: const [0.0, 0.4, 0.7, 1.0],
+                                  ),
+                                ),
+                                // Other properties of the container
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  context.read<FirestoreCubit>().deleteBook(
+                                      isbn, imageLinks, categories, title);
+                                },
+                                icon: const Icon(
+                                  Icons.remove_circle,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                left: 2,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  width: cardWidth,
+                                  height: 58,
+                                  child: Text(
+                                    title,
+                                    textAlign: TextAlign.left,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: columnNum,
+                        childAspectRatio: 0.6,
+                        mainAxisSpacing: 0,
+                        crossAxisSpacing: 0,
+                      ),
+                    ),
+                  )
+                ],
               );
             } else {
               return const SizedBox.shrink();

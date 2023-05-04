@@ -2,7 +2,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../ApiServices/ApiBookList.dart';
 
-abstract class BookListStates {}
+abstract class BookListStates {
+  get bookLibraries => null;
+}
 
 class BookListInitial extends BookListStates {}
 

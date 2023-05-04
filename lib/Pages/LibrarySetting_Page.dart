@@ -5,9 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:lib_org/Pages/LibraryRack.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
 import 'package:lib_org/cubit/auth_state.dart';
 import 'package:lib_org/cubit/firestore_cubit.dart';
+import 'package:lib_org/cubit/user_libraries_cubit.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -19,8 +21,16 @@ class SettingPage extends StatefulWidget {
 class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthRepo(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AuthRepo(),
+        ),
+        BlocProvider(
+          create: (context) =>
+              UserLibrariesCubit(context.read<AuthRepo>().state),
+        ),
+      ],
       child: BlocBuilder<AuthRepo, AuthState>(
         builder: (context, state) {
           return Scaffold(
@@ -70,7 +80,7 @@ class _SettingPageState extends State<SettingPage> {
                                       height: 20,
                                     ),
                                     Text(
-                                      "ID: ${state.user!.uid}",
+                                      "ID: //${state.user!.uid}",
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -146,6 +156,31 @@ class _SettingPageState extends State<SettingPage> {
                                 color: Colors.white,
                               ),
                               Text("   Application Settings",
+                                  style: TextStyle(color: Colors.white))
+                            ],
+                          ))),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStatePropertyAll<Color>(Colors.indigo)),
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => LibraryRackPage()));
+                      },
+                      child: Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.storage,
+                                color: Colors.white,
+                              ),
+                              Text("   Your Library's Rack",
                                   style: TextStyle(color: Colors.white))
                             ],
                           ))),

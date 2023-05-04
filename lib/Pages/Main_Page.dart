@@ -76,7 +76,7 @@ class HomeWidgetState extends State<HomeWidget> {
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 140,
+                    fontSize: 120,
                   ),
                 ),
               ),
@@ -95,13 +95,14 @@ class HomeWidgetState extends State<HomeWidget> {
               ),
             ),
           ]),
-          Padding(
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             padding: const EdgeInsets.all(8.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 DropdownButton<String>(
-                  hint: const Text('Dicover something new'),
+                  hint: const Text('Discover something new'),
                   value: selectedGenre,
                   onChanged: (String? value) {
                     setState(() {
@@ -119,22 +120,22 @@ class HomeWidgetState extends State<HomeWidget> {
                           ))
                       .toList(),
                 ),
-                ElevatedButton(
-                  style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BookSearchPage(),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: const [
-                      Text('Search for an item '),
-                      Icon(Icons.search)
-                    ],
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        backgroundColor: Colors.indigo),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookSearchPage(),
+                        ),
+                      );
+                    },
+                    child: const Icon(Icons.search, size: 30),
                   ),
                 ),
               ],

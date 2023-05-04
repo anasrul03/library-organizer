@@ -20,19 +20,6 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
   final db = FirebaseFirestore.instance;
 
-  // void checkUserInput(categoriesList) {
-  //   List<Categories> tmpArray = [];
-  //   categoriesList.forEach((value) {
-  //     if (value == true) {
-  //       tmpArray.add(value);
-  //     }
-  //   });
-  //   for (Categories category in categoriesList) {
-  //     // print('${category.title}: ${category.isSelected}');
-  //     print(tmpArray.toList());
-  //   }
-  // }
-
   Future<void> addBook(BuildContext context, isbn, imageLinks, categories,
       title, categoriesList) async {
     try {
@@ -68,7 +55,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         }
       }
 
-      fetchData();
+      // fetchData();
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           action: SnackBarAction(
@@ -85,7 +72,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
     }
   }
 
-  Future<void> fetchData() async {
+  Future<void> fetchData(value) async {
     emit(FirestoreLoading());
 
     try {
@@ -101,7 +88,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
       if (docSnapshot.exists) {
         // print("snapshot is exist");
         final data = docSnapshot.data() as Map<String, dynamic>;
-        final bookLibraries = data['flutter'];
+        final bookLibraries = data[value];
         // print(bookLibraries);
         if (bookLibraries != null) {
           final bookLibrariesList =
@@ -148,13 +135,18 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
       emit(const FirestoreSuccess("Successfully deleted"));
 
-      fetchData();
+      // fetchData();
     } catch (error) {
       emit(FirestoreError(error.toString()));
     }
   }
 
-  Future<void> deleteBook(String isbn, imageLinks, categories, title) async {
+  Future<void> deleteBook(
+    String isbn,
+    imageLinks,
+    categories,
+    title,
+  ) async {
     try {
       final user = authState.user;
       if (user == null) {
@@ -169,7 +161,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         final updatedBooks = List<Map<String, dynamic>>.from(books)
           ..removeWhere((book) => book['ISBN'] == isbn);
         await docRef.update({"flutter": updatedBooks});
-        fetchData();
+        // fetchData();
       } else {
         emit(const FirestoreError("Data not exist"));
       }
