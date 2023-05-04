@@ -51,17 +51,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
             left: 20,
             right: 20,
             child: ElevatedButton(
-              style: ButtonStyle(
+              style: const ButtonStyle(
                   backgroundColor:
                       MaterialStatePropertyAll<Color>(Colors.indigo)),
               onPressed: () {
                 if (_currentPage == 2) {
                   // Handle last page button press
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => Authentication()));
+                      builder: (context) => const Authentication()));
                 } else {
                   _pageController.nextPage(
-                    duration: Duration(milliseconds: 500),
+                    duration: const Duration(milliseconds: 500),
                     curve: Curves.ease,
                   );
                 }
