@@ -58,7 +58,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 if (_currentPage == 2) {
                   // Handle last page button press
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const Authentication()));
+                      builder: (context) => Authentication()));
                 } else {
                   _pageController.nextPage(
                     duration: const Duration(milliseconds: 500),

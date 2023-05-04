@@ -142,11 +142,8 @@ class FirestoreCubit extends Cubit<FirestoreState> {
   }
 
   Future<void> deleteBook(
-    String isbn,
-    imageLinks,
-    categories,
-    title,
-  ) async {
+      String isbn, imageLinks, categories, title, value) async {
+    final String tableName = "Reading";
     try {
       final user = authState.user;
       if (user == null) {
@@ -157,11 +154,47 @@ class FirestoreCubit extends Cubit<FirestoreState> {
       DocumentSnapshot doc = await docRef.get();
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
-        final books = data["flutter"] as List<dynamic>;
-        final updatedBooks = List<Map<String, dynamic>>.from(books)
-          ..removeWhere((book) => book['ISBN'] == isbn);
-        await docRef.update({"flutter": updatedBooks});
-        // fetchData();
+
+        switch (value) {
+          case 0:
+            final books = data["Reading"] as List<dynamic>;
+            final updatedBooks = List<Map<String, dynamic>>.from(books)
+              ..removeWhere((book) => book['ISBN'] == isbn);
+            await docRef.update({"Reading": updatedBooks});
+            print("deleting from Reading");
+            tableName == "Reading";
+            break;
+          case 1:
+            final books = data["Wishlist"] as List<dynamic>;
+            final updatedBooks = List<Map<String, dynamic>>.from(books)
+              ..removeWhere((book) => book['ISBN'] == isbn);
+            await docRef.update({"Wishlist": updatedBooks});
+            print("deleting from Wishlist");
+            tableName == "Wishlist";
+
+            break;
+          case 2:
+            final books = data["Completed"] as List<dynamic>;
+            final updatedBooks = List<Map<String, dynamic>>.from(books)
+              ..removeWhere((book) => book['ISBN'] == isbn);
+            await docRef.update({"Completed": updatedBooks});
+            print("deleting from Completed");
+            tableName == "Completed";
+
+            break;
+          case 3:
+            final books = data["Favorites"] as List<dynamic>;
+            final updatedBooks = List<Map<String, dynamic>>.from(books)
+              ..removeWhere((book) => book['ISBN'] == isbn);
+            await docRef.update({"Favorites": updatedBooks});
+            print("deleting from Favorites");
+            tableName == "Favorites";
+
+            break;
+          default:
+        }
+
+        fetchData(tableName);
       } else {
         emit(const FirestoreError("Data not exist"));
       }

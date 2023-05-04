@@ -16,10 +16,25 @@ class LibraryPage extends StatefulWidget {
   const LibraryPage({Key? key}) : super(key: key);
 
   @override
-  State<LibraryPage> createState() => _LibraryPageState();
+  State<LibraryPage> createState() => LibraryPageState();
 }
 
-class _LibraryPageState extends State<LibraryPage> {
+class LibraryPageState extends State<LibraryPage>
+    with TickerProviderStateMixin {
+  final List<Tab> myTabs = <Tab>[
+    new Tab(icon: Text("Reading")),
+    new Tab(icon: Text("Wishlist")),
+    new Tab(icon: Text("Completed")),
+    new Tab(icon: Text("Favorites")),
+  ];
+  TabController? _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: myTabs.length, vsync: this);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -32,20 +47,24 @@ class _LibraryPageState extends State<LibraryPage> {
               appBar: AppBar(
                 backgroundColor: Colors.indigo,
                 centerTitle: true,
-                title: Text("My Library"),
-                bottom: const TabBar(tabs: [
-                  Tab(icon: Text("Reading")),
-                  Tab(icon: Text("Wishlist")),
-                  Tab(icon: Text("Completed")),
-                  Tab(icon: Text("Favorites")),
-                ]),
+                title: const Text("My Library"),
+                bottom: TabBar(
+                  tabs: myTabs,
+                  controller:
+                      _tabController, // Assign the TabController to the TabBar
+                ),
               ),
-              body: const TabBarView(
-                children: [
-                  BookCard(tableName: "Reading"),
-                  BookCard(tableName: "Wishlist"),
-                  BookCard(tableName: "Completed"),
-                  BookCard(tableName: "Favorites")
+              floatingActionButton: FloatingActionButton(onPressed: () {
+                print(_tabController!
+                    .index); // Get the value of the current selected tab
+              }),
+              body: TabBarView(
+                controller: _tabController,
+                children: const [
+                  BookCard(tableName: "Reading", currentTab: 0),
+                  BookCard(tableName: "Wishlist", currentTab: 1),
+                  BookCard(tableName: "Completed", currentTab: 2),
+                  BookCard(tableName: "Favorites", currentTab: 3)
                 ],
               ),
             ),
@@ -58,7 +77,9 @@ class _LibraryPageState extends State<LibraryPage> {
 
 class BookCard extends StatefulWidget {
   final String tableName;
-  const BookCard({Key? key, required this.tableName}) : super(key: key);
+  final int currentTab;
+  const BookCard({Key? key, required this.tableName, required this.currentTab})
+      : super(key: key);
 
   @override
   State<BookCard> createState() => _BookCardState();
@@ -159,8 +180,38 @@ class _BookCardState extends State<BookCard> {
                               ),
                               IconButton(
                                 onPressed: () {
+                                  final String value = "Reading";
+                                  print(widget.currentTab);
                                   context.read<FirestoreCubit>().deleteBook(
-                                      isbn, imageLinks, categories, title);
+                                      isbn,
+                                      imageLinks,
+                                      categories,
+                                      title,
+                                      widget.currentTab);
+                                  switch (widget.currentTab) {
+                                    case 0:
+                                      setState(() {
+                                        value == "Reading";
+                                      });
+                                      break;
+                                    case 1:
+                                      setState(() {
+                                        value == "Wishlist";
+                                      });
+                                      break;
+                                    case 2:
+                                      setState(() {
+                                        value == "Completed";
+                                      });
+                                      break;
+                                    case 3:
+                                      setState(() {
+                                        value == "Favorites";
+                                      });
+                                      break;
+                                    default:
+                                  }
+                                  print("Fetching data from $value");
                                 },
                                 icon: const Icon(
                                   Icons.remove_circle,
