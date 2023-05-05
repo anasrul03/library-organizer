@@ -3,6 +3,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lib_org/Components/CheckList.dart';
 import 'package:lib_org/Services/ApiStates/ApiDetailsStates.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
 import 'package:lib_org/cubit/auth_state.dart';
@@ -252,14 +253,23 @@ class BookDetailsState extends State<BookDetailsPage> {
                                   builder: (context, state) {
                                     return FloatingActionButton(
                                       backgroundColor: Colors.indigo,
-                                      onPressed: () {
-                                        print("Added");
-                                        context.read<FirestoreCubit>().addBook(
-                                            context,
-                                            "${widget.isbn}",
-                                            "${bookModel.volumeInfo?.imageLinks.thumbnail}",
-                                            "${(bookModel.volumeInfo?.categories.join(', '))}",
-                                            "${bookModel.volumeInfo?.title}");
+                                      onPressed: () async {
+                                        // print("pressed");
+                                        await showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20.0)),
+                                              title: Text("Which Rack ?"),
+                                              content: CheckListCategories(
+                                                  isbn: widget.isbn),
+                                              // Text("s"),
+                                            );
+                                          },
+                                        );
                                       },
                                       child: Icon(
                                         Icons.add_task,

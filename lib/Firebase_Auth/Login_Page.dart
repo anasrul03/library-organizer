@@ -1,12 +1,16 @@
 // ignore_for_file: prefer_const_constructors, sort_child_properties_last, unused_field, prefer_interpolation_to_compose_strings, use_build_context_synchronously, avoid_print
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lib_org/cubit/auth_state.dart';
 import 'package:lib_org/main.dart';
@@ -16,6 +20,7 @@ import '../cubit/auth_cubit.dart';
 
 class LoginPage extends StatefulWidget {
   VoidCallback? toSignUpPage;
+
   LoginPage({super.key, this.toSignUpPage});
 
   @override
@@ -26,7 +31,10 @@ class _LoginPageState extends State<LoginPage> {
   bool _passwordVisible = false;
   final bool isLoading = false;
   final AuthRepo _authCubit = AuthRepo();
-
+  final TextStyle title =
+      TextStyle(fontWeight: FontWeight.bold, fontSize: 60, color: Colors.white);
+  final TextStyle subtitle = TextStyle(
+      fontWeight: FontWeight.w300, fontSize: 20, color: Colors.white60);
   @override
   void initState() {
     // TODO: implement initState
@@ -45,38 +53,125 @@ class _LoginPageState extends State<LoginPage> {
     return BlocBuilder<AuthRepo, AuthState>(
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: Colors.indigo,
-          body: Container(
-            padding: EdgeInsets.all(15),
-            margin: const EdgeInsets.all(20),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                //set border radius more than 50% of height and width to make circle
-              ),
-              child: Container(
-                padding: EdgeInsets.all(15),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    const Text("Login Page"),
-                    Material(
-                      elevation: 10.0,
-                      borderRadius: BorderRadius.circular(15.0),
-                      shadowColor: Color(0x55434343),
+          resizeToAvoidBottomInset: false,
+          // backgroundColor: Colors.indigo,
+          body: Center(
+            child: Stack(
+              // textDirection: TextDirection.ltr,
+              // fit: StackFit.passthrough,
+              children: <Widget>[
+                CachedNetworkImage(
+                  imageUrl:
+                      "https://img.freepik.com/free-photo/reading-concept-vintage-tone-woman-selecting-book-from-bookshelf-portrait-serious-girl-library-looking-book_1391-446.jpg?w=1380&t=st=1683219844~exp=1683220444~hmac=8560bd8320b5411e1d4326cca98e9c833a9f70711772afcd5ff6e6176a203247",
+                  width: 600,
+                  height: 900,
+                  fit: BoxFit.cover,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.9),
+                        Colors.black.withOpacity(0.6),
+                        Colors.black.withOpacity(0.3),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.4, 0.7, 1.0],
+                    ),
+                  ),
+                  // Other properties of the container
+                ),
+                Positioned(
+                  top: 145,
+                  left: 20,
+                  child: Text(
+                    "Let's Start!",
+                    textAlign: TextAlign.left,
+                    style: title,
+                  ),
+                ),
+                Positioned(
+                  top: 205,
+                  left: 20,
+                  child: SizedBox(
+                    width: 300,
+                    child: Text(
+                      "Manage your books perfectly without hassle",
+                      textAlign: TextAlign.left,
+                      style: subtitle,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 300,
+                  // left: 10,
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(19, 0, 35, 0),
+                    child: GlassmorphicContainer(
+                      width: 350,
+                      height: 400,
+                      borderRadius: 9,
+                      blur: 20,
+                      alignment: Alignment.bottomCenter,
+                      border: 2,
+                      linearGradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF0E0E0E).withOpacity(0.1),
+                            Color(0xFF272727).withOpacity(0.05),
+                          ],
+                          stops: [
+                            0.1,
+                            1,
+                          ]),
+                      borderGradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF555555).withOpacity(0.5),
+                          Color((0xFF353535)).withOpacity(0.5),
+                        ],
+                      ),
+                      child: null,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 300,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 10),
+                    padding: EdgeInsets.all(20),
+                    width: 368,
+                    child: Material(
+                      // elevation: 10.0,
+                      borderRadius: BorderRadius.circular(12.0),
+                      // shadowColor: Color(0x55434343),
                       child: TextFormField(
                         onChanged: (value) {
                           context.read<AuthRepo>().emailChanged(value);
                         },
                         decoration: InputDecoration(
-                            border: OutlineInputBorder(), hintText: "Email"),
+                            prefixIcon: Icon(Icons.email),
+                            // border: OutlineInputBorder(),
+                            hintText: "Email"),
                       ),
                     ),
-                    Material(
-                      elevation: 10.0,
-                      borderRadius: BorderRadius.circular(15.0),
-                      shadowColor: Color(0x55434343),
+                  ),
+                ),
+                Positioned(
+                  top: 360,
+                  // left: 10,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 10),
+                    padding: EdgeInsets.all(20),
+                    width: 368,
+                    child: Material(
+                      // elevation: 10.0,
+                      borderRadius: BorderRadius.circular(12.0),
+                      // shadowColor: Color(0x55434343),
                       child: TextFormField(
                         onChanged: (value) {
                           context.read<AuthRepo>().passwordChanged(value);
@@ -84,6 +179,7 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         obscureText: _passwordVisible,
                         decoration: InputDecoration(
+                            prefixIcon: Icon(Icons.password),
                             suffixIcon: IconButton(
                                 onPressed: () {
                                   setState(() {
@@ -93,106 +189,321 @@ class _LoginPageState extends State<LoginPage> {
                                 icon: Icon(_passwordVisible
                                     ? Icons.visibility
                                     : Icons.visibility_off)),
-                            border: OutlineInputBorder(),
+                            // border: OutlineInputBorder(),
                             hintText: "Password"),
                       ),
                     ),
-                    RichText(
-                      text: TextSpan(
-                          text: "No Account? ",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                          ),
-                          children: [
-                            TextSpan(
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = widget.toSignUpPage,
-                                text: 'Sign Up',
-                                style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    color: Colors.blue[200]))
-                          ]),
-                    ),
-                    SizedBox(
-                      width: 200,
-                      child: isLoading
-                          ? CircularProgressIndicator()
-                          : ElevatedButton(
-                              autofocus: true,
-                              onPressed: () {
-                                setState(() {
-                                  isLoading == true;
-                                  Timer(Duration(seconds: 3), () {
-                                    context
-                                        .read<AuthRepo>()
-                                        .logIn(context, isLoading);
-                                  });
-                                });
-                              },
-                              child: Text("Login"),
-                              style: ElevatedButton.styleFrom(
-                                //border width and color
-                                elevation: 2, //elevation of button
-                                shape: RoundedRectangleBorder(
-                                    //to set border radius to button
-                                    borderRadius: BorderRadius.circular(13)),
-                              )),
-                    ),
-                    SizedBox(
-                      width: 200,
-                      child: isLoading
-                          ? CircularProgressIndicator()
-                          : ElevatedButton(
-                              autofocus: true,
-                              onPressed: () {
-                                context.read<AuthRepo>().anon(context);
-                              },
-                              child: Text("Anonymous"),
-                              style: ElevatedButton.styleFrom(
-                                //border width and color
-                                elevation: 2, //elevation of button
-                                shape: RoundedRectangleBorder(
-                                    //to set border radius to button
-                                    borderRadius: BorderRadius.circular(13)),
-                              )),
-                    ),
-                    SizedBox(
-                        width: 200,
-                        child: SignInButton(
-                          Buttons.Google,
-                          onPressed: () async {
-                            setState(() {
-                              isLoading ==
-                                  true; // set isLoading to true to show the circular progress indicator
-                            });
-
-                            try {
-                              final UserCredential userCredential =
-                                  await context
-                                      .read<AuthRepo>()
-                                      .signInWithGoogle();
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  backgroundColor: Colors.green,
-                                  content: Text(
-                                      "Logged using google ${userCredential.user?.displayName}"),
-                                  duration: Duration(seconds: 1)));
-                              // Successfully signed in
-                            } catch (e) {
-                              print("YOUR ERROR IS $e");
-                              // Error signing in
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      backgroundColor: Colors.black,
-                                      content: Text("Cancelled : $e"),
-                                      duration: Duration(seconds: 5)));
-                              // Successfully
-                            }
-                          },
-                        )),
-                  ],
+                  ),
                 ),
-              ),
+                Positioned(
+                    top: 500,
+                    left: 6,
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            width: 300,
+                            child: isLoading
+                                ? CircularProgressIndicator()
+                                : ElevatedButton(
+                                    autofocus: true,
+                                    onPressed: () {
+                                      context
+                                          .read<AuthRepo>()
+                                          .showLoaderDialog(context);
+                                      context
+                                          .read<AuthRepo>()
+                                          .logIn(context, isLoading);
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text("Login"),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.indigo,
+                                      //border width and color
+                                      elevation: 2, //elevation of button
+                                      shape: RoundedRectangleBorder(
+                                          //to set border radius to button
+                                          borderRadius:
+                                              BorderRadius.circular(518)),
+                                    )),
+                          ),
+                          SizedBox(
+                            width: 300,
+                            child: isLoading
+                                ? CircularProgressIndicator()
+                                : ElevatedButton(
+                                    autofocus: true,
+                                    onPressed: () {
+                                      print("pressed");
+                                      context.read<AuthRepo>().anon(context);
+                                    },
+                                    child: Text("Anonymous"),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.black87,
+                                      //border width and color
+                                      elevation: 2, //elevation of button
+                                      shape: RoundedRectangleBorder(
+                                          //to set border radius to button
+                                          borderRadius:
+                                              BorderRadius.circular(518)),
+                                    )),
+                          ),
+                          Container(
+                              margin: EdgeInsets.symmetric(horizontal: 20),
+                              width: 300,
+                              child: SignInButton(
+                                shape: RoundedRectangleBorder(
+                                    //to set border radius to button
+                                    borderRadius: BorderRadius.circular(18)),
+                                Buttons.Google,
+                                padding: EdgeInsets.only(left: 40),
+                                onPressed: () async {
+                                  setState(() {
+                                    isLoading ==
+                                        true; // set isLoading to true to show the circular progress indicator
+                                  });
+
+                                  try {
+                                    final UserCredential userCredential =
+                                        await context
+                                            .read<AuthRepo>()
+                                            .signInWithGoogle();
+                                    Fluttertoast.showToast(
+                                        msg:
+                                            "Logged using google ${userCredential.user?.displayName}",
+                                        toastLength: Toast.LENGTH_LONG,
+                                        gravity: ToastGravity.TOP,
+                                        timeInSecForIosWeb: 2,
+                                        // backgroundColor: Colors.red,
+                                        textColor: Colors.white,
+                                        fontSize: 16.0);
+                                    // ScaffoldMessenger.of(context).showSnackBar(
+                                    //     SnackBar(
+                                    //         backgroundColor: Colors.green,
+                                    //         content: Text(
+                                    //             "Logged using google ${userCredential.user?.displayName}"),
+                                    //         duration: Duration(seconds: 1)));
+                                    // Successfully signed in
+                                  } catch (e) {
+                                    print("YOUR ERROR IS $e");
+                                    // Error signing in
+                                    Fluttertoast.showToast(
+                                        msg: "Cancelled : $e",
+                                        toastLength: Toast.LENGTH_LONG,
+                                        gravity: ToastGravity.TOP,
+                                        timeInSecForIosWeb: 2,
+                                        // backgroundColor: Colors.red,
+                                        textColor: Colors.white,
+                                        fontSize: 16.0);
+                                    // ScaffoldMessenger.of(context).showSnackBar(
+                                    //     SnackBar(
+                                    //         backgroundColor: Colors.black,
+                                    //         content: Text("Cancelled : $e"),
+                                    //         duration: Duration(seconds: 5)));
+                                    // Successfully
+                                  }
+                                },
+                              )),
+                        ],
+                      ),
+                    )),
+                Positioned(
+                  top: 450,
+                  right: 40,
+                  child: RichText(
+                    text: TextSpan(
+                        text: "No Account? ",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                        ),
+                        children: [
+                          TextSpan(
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = widget.toSignUpPage,
+                              text: 'Sign Up',
+                              style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  color: Colors.blue[200]))
+                        ]),
+                  ),
+                ),
+                Positioned(
+                  top: 718,
+                  left: 100,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      "Library Organizer",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 25,
+                          color: Colors.white),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 750,
+                  left: 165,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 6),
+                    child: Text(
+                      "by Lubega & Anas",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                          fontSize: 10,
+                          color: Colors.white),
+                    ),
+                  ),
+                )
+              ],
+
+              // Column(
+              //   mainAxisSize: MainAxisSize.max,
+              //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //   children: <Widget>[
+              //     Stack(
+              //       children: [
+              //         Image.asset(
+              //           "lib/assets/lib.jpg",
+              //           width: 400,
+              //           height: 500,
+              //           fit: BoxFit.cover,
+              //         )
+              //       ],
+              //     ),
+              // Text(
+              //   "Let's Start!",
+              //   style: title,
+              // ),
+              // Material(
+              //   elevation: 10.0,
+              //   borderRadius: BorderRadius.circular(15.0),
+              //   shadowColor: Color(0x55434343),
+              //   child: TextFormField(
+              //     onChanged: (value) {
+              //       context.read<AuthRepo>().emailChanged(value);
+              //     },
+              //     decoration: InputDecoration(
+              //         border: OutlineInputBorder(), hintText: "Email"),
+              //   ),
+              // ),
+              // Material(
+              //   elevation: 10.0,
+              //   borderRadius: BorderRadius.circular(15.0),
+              //   shadowColor: Color(0x55434343),
+              //   child: TextFormField(
+              //     onChanged: (value) {
+              //       context.read<AuthRepo>().passwordChanged(value);
+              //       print(state.password);
+              //     },
+              //     obscureText: _passwordVisible,
+              //     decoration: InputDecoration(
+              //         suffixIcon: IconButton(
+              //             onPressed: () {
+              //               setState(() {
+              //                 _passwordVisible = !_passwordVisible;
+              //               });
+              //             },
+              //             icon: Icon(_passwordVisible
+              //                 ? Icons.visibility
+              //                 : Icons.visibility_off)),
+              //         border: OutlineInputBorder(),
+              //         hintText: "Password"),
+              //   ),
+              // ),
+              // RichText(
+              //   text: TextSpan(
+              //       text: "No Account? ",
+              //       style: TextStyle(
+              //         color: Colors.white,
+              //         fontSize: 18,
+              //       ),
+              //       children: [
+              //         TextSpan(
+              //             recognizer: TapGestureRecognizer()
+              //               ..onTap = widget.toSignUpPage,
+              //             text: 'Sign Up',
+              //             style: TextStyle(
+              //                 decoration: TextDecoration.underline,
+              //                 color: Colors.blue[200]))
+              //       ]),
+              // ),
+              // SizedBox(
+              //   width: 200,
+              //   child: isLoading
+              //       ? CircularProgressIndicator()
+              //       : ElevatedButton(
+              //           autofocus: true,
+              //           onPressed: () {
+              //             context
+              //                 .read<AuthRepo>()
+              //                 .showLoaderDialog(context);
+              //             context
+              //                 .read<AuthRepo>()
+              //                 .logIn(context, isLoading);
+              //             Navigator.pop(context);
+              //           },
+              //           child: Text("Login"),
+              //           style: ElevatedButton.styleFrom(
+              //             //border width and color
+              //             elevation: 2, //elevation of button
+              //             shape: RoundedRectangleBorder(
+              //                 //to set border radius to button
+              //                 borderRadius: BorderRadius.circular(13)),
+              //           )),
+              // ),
+              // SizedBox(
+              //   width: 200,
+              //   child: isLoading
+              //       ? CircularProgressIndicator()
+              //       : ElevatedButton(
+              //           autofocus: true,
+              //           onPressed: () {
+              //             context.read<AuthRepo>().anon(context);
+              //           },
+              //           child: Text("Anonymous"),
+              //           style: ElevatedButton.styleFrom(
+              //             //border width and color
+              //             elevation: 2, //elevation of button
+              //             shape: RoundedRectangleBorder(
+              //                 //to set border radius to button
+              //                 borderRadius: BorderRadius.circular(13)),
+              //           )),
+              // ),
+              // SizedBox(
+              //     width: 200,
+              //     child: SignInButton(
+              //       Buttons.Google,
+              //       onPressed: () async {
+              //         setState(() {
+              //           isLoading ==
+              //               true; // set isLoading to true to show the circular progress indicator
+              //         });
+
+              //         try {
+              //           final UserCredential userCredential = await context
+              //               .read<AuthRepo>()
+              //               .signInWithGoogle();
+              //           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              //               backgroundColor: Colors.green,
+              //               content: Text(
+              //                   "Logged using google ${userCredential.user?.displayName}"),
+              //               duration: Duration(seconds: 1)));
+              //           // Successfully signed in
+              //         } catch (e) {
+              //           print("YOUR ERROR IS $e");
+              //           // Error signing in
+              //           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              //               backgroundColor: Colors.black,
+              //               content: Text("Cancelled : $e"),
+              //               duration: Duration(seconds: 5)));
+              //           // Successfully
+              //         }
+              //       },
+              //     )),
+              // ],
             ),
           ),
         );

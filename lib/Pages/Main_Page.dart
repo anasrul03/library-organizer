@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lib_org/Pages/BookDetails_Page.dart';
 import 'package:lib_org/Pages/Search_Page.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -96,10 +97,11 @@ class HomeWidgetState extends State<HomeWidget> {
               ),
             ),
           ]),
-          Padding(
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             padding: const EdgeInsets.all(8.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 DropdownButton<String>(
                   hint: const Text('Discover something new'),
@@ -120,22 +122,22 @@ class HomeWidgetState extends State<HomeWidget> {
                           ))
                       .toList(),
                 ),
-                ElevatedButton(
-                  style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BookSearchPage(),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: const [
-                      Text('Search for an item '),
-                      Icon(Icons.search)
-                    ],
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        backgroundColor: Colors.indigo),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookSearchPage(),
+                        ),
+                      );
+                    },
+                    child: const Icon(Icons.search, size: 30),
                   ),
                 ),
               ],
@@ -204,15 +206,29 @@ class HomeWidgetState extends State<HomeWidget> {
                               ),
                             ).then((value) {
                               if (value != null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Text(value),
-                                    ),
-                                    backgroundColor: Colors.indigo,
-                                  ),
-                                );
+                                Fluttertoast.showToast(
+                                    msg: value,
+                                    toastLength: Toast.LENGTH_LONG,
+                                    gravity: ToastGravity.TOP,
+                                    timeInSecForIosWeb: 2,
+                                    // backgroundColor: Colors.red,
+                                    textColor: Colors.white,
+                                    fontSize: 16.0);
+                                // ScaffoldMessenger.of(context).showSnackBar(
+                                //   SnackBar(
+                                //     action: SnackBarAction(
+                                //         label: "Dismiss",
+                                //         onPressed: () {
+                                //           ScaffoldMessenger.of(context)
+                                //               .hideCurrentSnackBar();
+                                //         }),
+                                //     content: Padding(
+                                //       padding: const EdgeInsets.all(12.0),
+                                //       child: Text(value),
+                                //     ),
+                                //     backgroundColor: Colors.indigo,
+                                //   ),
+                                // );
                               }
                             });
                           },

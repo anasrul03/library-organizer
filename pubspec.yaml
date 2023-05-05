@@ -52,11 +52,14 @@ dependencies:
   flutter_signin_button: ^2.0.0
   equatable: ^2.0.5
   cloud_firestore: ^4.5.3
+  permission_handler: ^10.2.0
   url_launcher: ^6.1.10
-  provider: ^6.0.5
+  flutter_svg: ^2.0.5
+  image_picker: ^0.8.7+4
+  glassmorphism: ^3.0.0
   loading_animations: ^2.2.0
-  image_picker: ^0.8.4+4
-  permission_handler: ^8.3.0
+  fluttertoast: ^8.2.1
+  toast: ^0.3.0
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +86,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
   - lib/API_KEY.env
+  - lib/assets/
   - assets/people/ahrar.png
   - assets/people/hamed.png
   - assets/people/horam.png

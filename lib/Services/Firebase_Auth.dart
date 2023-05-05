@@ -3,15 +3,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lib_org/Firebase_Auth/Login_Page.dart';
 import 'package:lib_org/Firebase_Auth/SignUp_Page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:lib_org/Pages/prefaceLoad.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
 import 'package:lib_org/cubit/signup_cubit.dart';
 
 class Authentication extends StatefulWidget {
-  const Authentication({super.key});
+  final bool firstTime;
+  Authentication({super.key, required this.firstTime});
 
   @override
   State<Authentication> createState() => _AuthenticationState();
@@ -19,19 +22,23 @@ class Authentication extends StatefulWidget {
 
 class _AuthenticationState extends State<Authentication> {
   bool isLogged = true; // change to true if u want to start at login page
+  bool isFirstTime = true; // change to true if u want to start at login page
 
   // @override
   // Widget build(BuildContext context) {
-  //   if (isLogged) {
+  //   if (isLogged && !isFirstTime) {
   //     return LoginPage(
   //       toSignUpPage: toggle,
+  //       isBoarded: true,
   //     );
-  //   } else {
-  //     return BlocProvider(
-  //       create: (context) => SignupCubit(authRepo: context.read<AuthRepo>()),
-  //       child: SignUpPage(
-  //         toLoginPage: toggle,
-  //       ),
+  //   } else if(!isLogged && isFirstTime){
+
+  //     return OnboardingPage(isDone: isFirstTime);
+  //   }
+
+  //   else {
+  //     return SignUpPage(
+  //       toLoginPage: toggle,
   //     );
   //   }
   // }
@@ -74,23 +81,62 @@ class GoogleAuth {
         user = userCredential.user;
       } on FirebaseAuthException catch (e) {
         if (e.code == 'account-exists-with-different-credential') {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            backgroundColor: Colors.red,
-            content: Text(
-                "'The account already exists with a different credential.'"),
-          ));
+          Fluttertoast.showToast(
+              msg: "The account already exists with a different credential.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 2,
+              // backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0);
+          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          //   action: SnackBarAction(
+          //       label: "Dismiss",
+          //       onPressed: () {
+          //         ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          //       }),
+          //   backgroundColor: Colors.red,
+          //   content: Text(
+          //       "'The account already exists with a different credential.'"),
+          // ));
         } else if (e.code == 'invalid-credential') {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            backgroundColor: Colors.red,
-            content: Text(
-                "'Error occurred while accessing credentials. Try again.'"),
-          ));
+          Fluttertoast.showToast(
+              msg: 'Error occurred while accessing credentials. Try again.',
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 2,
+              // backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0);
+          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          //   action: SnackBarAction(
+          //       label: "Dismiss",
+          //       onPressed: () {
+          //         ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          //       }),
+          //   backgroundColor: Colors.red,
+          //   content: Text(
+          //       "'Error occurred while accessing credentials. Try again.'"),
+          // ));
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: Colors.red,
-          content: Text("Error occurred using Google Sign-In. Try again."),
-        ));
+        Fluttertoast.showToast(
+            msg: 'Error occurred using Google Sign-In. Try again.',
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.TOP,
+            timeInSecForIosWeb: 2,
+            // backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //   action: SnackBarAction(
+        //       label: "Dismiss",
+        //       onPressed: () {
+        //         ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        //       }),
+        //   backgroundColor: Colors.red,
+        //   content: Text("Error occurred using Google Sign-In. Try again."),
+        // ));
       }
     }
 
@@ -106,10 +152,18 @@ class GoogleAuth {
       }
       await FirebaseAuth.instance.signOut();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: Colors.red,
-        content: Text("Error Signing Out. Try again."),
-      ));
+      Fluttertoast.showToast(
+          msg: 'Error Signing Out. Try again.',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   backgroundColor: Colors.red,
+      //   content: Text("Error Signing Out. Try again."),
+      // ));
     }
   }
 }

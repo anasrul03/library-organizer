@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -297,15 +298,29 @@ class _BookSearchPageState extends State<BookSearchPage> {
                               ),
                             ).then((value) {
                               if (value != null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Padding(
-                                      padding: const EdgeInsets.all(12.0),
-                                      child: Text(value),
-                                    ),
-                                    backgroundColor: Colors.indigo,
-                                  ),
-                                );
+                                Fluttertoast.showToast(
+                                    msg: value,
+                                    toastLength: Toast.LENGTH_LONG,
+                                    gravity: ToastGravity.TOP,
+                                    timeInSecForIosWeb: 2,
+                                    // backgroundColor: Colors.red,
+                                    textColor: Colors.white,
+                                    fontSize: 16.0);
+                                // ScaffoldMessenger.of(context).showSnackBar(
+                                //   SnackBar(
+                                //     action: SnackBarAction(
+                                //         label: "Dismiss",
+                                //         onPressed: () {
+                                //           ScaffoldMessenger.of(context)
+                                //               .hideCurrentSnackBar();
+                                //         }),
+                                //     content: Padding(
+                                //       padding: const EdgeInsets.all(12.0),
+                                //       child: Text(value),
+                                //     ),
+                                //     backgroundColor: Colors.indigo,
+                                //   ),
+                                // );
                               }
                             });
                           },

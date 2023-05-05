@@ -6,10 +6,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:lib_org/Pages/LibraryRack.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
 import 'package:lib_org/cubit/auth_state.dart';
 import 'package:lib_org/cubit/firestore_cubit.dart';
+import 'package:lib_org/cubit/user_libraries_cubit.dart';
 import 'package:lib_org/main.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -64,24 +67,45 @@ class _SettingPageState extends State<SettingPage> {
                       _displayNameController.text = _currentDisplayName;
                     });
                     _setCurrentDisplayName(newDisplayName);
-                  }).catchError((error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Failed to update display name: $error'),
-                      ),
-                    );
-                  });
+                  }).catchError(
+                    (error) {
+                      Fluttertoast.showToast(
+                          msg: "Failed to update display name: $error",
+                          toastLength: Toast.LENGTH_LONG,
+                          gravity: ToastGravity.TOP,
+                          timeInSecForIosWeb: 2,
+                          // backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   SnackBar(
+                      //     action: SnackBarAction(
+                      //         label: "Dismiss",
+                      //         onPressed: () {
+                      //           ScaffoldMessenger.of(context)
+                      //               .hideCurrentSnackBar();
+                      //         }),
+                      //     content:
+                      //         Text('Failed to update display name: $error'),
+                      //   ),
+                      // );
+                    },
+                  );
                   Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                           builder: (BuildContext context) => super.widget));
                 }
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Display name updated'),
-                  ),
-                );
+                Fluttertoast.showToast(
+                    msg: "Changed name to $newDisplayName.",
+                    toastLength: Toast.LENGTH_LONG,
+                    gravity: ToastGravity.TOP,
+                    timeInSecForIosWeb: 2,
+                    // backgroundColor: Colors.red,
+                    textColor: Colors.white,
+                    fontSize: 16.0);
+
                 // Navigator.of(context).pop();
                 // Navigator.pushReplacement(
                 //     context,
@@ -97,8 +121,16 @@ class _SettingPageState extends State<SettingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthRepo(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AuthRepo(),
+        ),
+        BlocProvider(
+          create: (context) =>
+              UserLibrariesCubit(context.read<AuthRepo>().state),
+        ),
+      ],
       child: BlocBuilder<AuthRepo, AuthState>(
         builder: (context, state) {
           return Builder(builder: (context) {
@@ -196,13 +228,19 @@ class _SettingPageState extends State<SettingPage> {
                                                   .toString(),
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w500),
                                             ),
                                             const SizedBox(
                                               width: 10,
                                             ),
                                             GestureDetector(
                                                 onTap: _showEditNameDialog,
-                                                child: Icon(Icons.edit_note))
+                                                child: Icon(
+                                                  Icons.edit_note,
+                                                  size: 30,
+                                                ))
                                           ],
                                         ),
                                         SizedBox(
@@ -216,10 +254,13 @@ class _SettingPageState extends State<SettingPage> {
                                         SizedBox(
                                           height: 20,
                                         ),
-                                        Text(
-                                          "ID: ${state.user!.uid}",
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                        Container(
+                                          width: 200,
+                                          child: Text(
+                                            "ID: //${state.user!.uid}",
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -270,15 +311,6 @@ class _SettingPageState extends State<SettingPage> {
                           onPressed: () {
                             context.read<ThemeProvider>().isGridEven =
                                 !context.read<ThemeProvider>().isGridEven;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Padding(
-                                  padding: EdgeInsets.all(12.0),
-                                  child: Text('Switched grid layout'),
-                                ),
-                                backgroundColor: Colors.indigo,
-                              ),
-                            );
                           },
                           child: Container(
                               width: double.infinity,
@@ -336,6 +368,46 @@ class _SettingPageState extends State<SettingPage> {
                         ),
                       ),
                     ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: ElevatedButton(
+                          style: ButtonStyle(
+                              backgroundColor: MaterialStatePropertyAll<Color>(
+                                  Colors.indigo)),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => LibraryRackPage()));
+                          },
+                          child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.all(10),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.storage,
+                                    color: Colors.white,
+                                  ),
+                                  Text(
+                                    "   Your Library's Rack",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    "BETA",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w200,
+                                      fontSize: 10,
+                                    ),
+                                  )
+                                ],
+                              ))),
+                    ),
 
                     const SizedBox(
                       height: 60,
@@ -373,28 +445,4 @@ class _SettingPageState extends State<SettingPage> {
       ),
     );
   }
-
-  // Future signOut() async {
-  //   try {
-  //     GoogleSignIn().disconnect();
-  //     await FirebaseAuth.instance.signOut();
-  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-  //       duration: Duration(seconds: 1),
-  //       content: Text("Logged out"),
-  //       backgroundColor: Colors.grey,
-  //     ));
-  //   } on FirebaseAuthException catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-  //       duration: Duration(seconds: 6),
-  //       content: Text("Firebase Error: $e"),
-  //       backgroundColor: Colors.red,
-  //     ));
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-  //       duration: Duration(seconds: 6),
-  //       content: Text("Error: $e"),
-  //       backgroundColor: Colors.red,
-  //     ));
-  //   }
-  // }
 }

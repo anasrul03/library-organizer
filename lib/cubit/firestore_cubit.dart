@@ -5,8 +5,10 @@ import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lib_org/Pages/Home_Page.dart';
 import 'package:lib_org/cubit/auth_state.dart';
+import '../Components/Categories.dart';
 import '../main.dart';
 // import '../../components/snackbar.dart';
 
@@ -19,9 +21,55 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
   final db = FirebaseFirestore.instance;
 
-  Future<void> addBook(
-      BuildContext context, isbn, imageLinks, categories, title) async {
-    final List<String> myLibraries = ['flutter', 'javascript'];
+  Future<void> updateDisplayName(BuildContext context, updatedName) async {
+    try {
+      final user = authState.user;
+      // print(user);
+      if (user == null) {
+        emit(const FirestoreError("User not logged in"));
+        return;
+      }
+      // Create a new document in the "bookLibraries" collection with a user email
+      final docRef = db.collection("userInfo").doc(user.email);
+      DocumentSnapshot doc = await docRef.get();
+
+      final userDetails = {
+        'displayName': updatedName,
+      };
+      if (doc.exists) {
+        print("Running update");
+        await docRef.update({
+          "userInfo": FieldValue.arrayUnion([userDetails['displayName']])
+        });
+        print("Changed user name to ${userDetails['displayName']}");
+      } else {
+        print("Running update");
+
+        await docRef.set({
+          "userInfo": [userDetails['displayName']]
+        });
+        print("Changed user name to ${userDetails['displayName']}");
+      }
+
+      // fetchData();
+
+      Fluttertoast.showToast(
+          msg: "Changed name to $updatedName.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    } catch (error) {
+      emit(FirestoreError(error.toString()));
+      print("got error: $error");
+      // snackBar(error.toString(), Colors.red, Colors.white, context);
+    }
+  }
+
+  Future<void> addBook(BuildContext context, isbn, imageLinks, categories,
+      title, categoriesList) async {
     try {
       final user = authState.user;
       // print(user);
@@ -39,27 +87,41 @@ class FirestoreCubit extends Cubit<FirestoreState> {
         'categories': categories,
         'title': title,
       };
-
       if (doc.exists) {
-        await docRef.update({
-          myLibraries[0]: FieldValue.arrayUnion([bookLibraries])
-        });
+        for (String categoriesName in categoriesList) {
+          await docRef.update({
+            categoriesName: FieldValue.arrayUnion([bookLibraries])
+          });
+          print("Added Book to Rack: ${categoriesName}");
+        }
       } else {
-        await docRef.set({
-          myLibraries[0]: [bookLibraries]
-        });
+        for (String categoriesName in categoriesList) {
+          await docRef.set({
+            categoriesName: [bookLibraries]
+          });
+          print("Added Book to Rack: ${categoriesName}");
+        }
       }
 
-      fetchData();
+      // fetchData();
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          action: SnackBarAction(
-              label: "Dismiss",
-              onPressed: () {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              }),
-          backgroundColor: Colors.indigo,
-          content: Text("Added to Library")));
+      Fluttertoast.showToast(
+          msg: "Added to Library",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //     duration: Duration(seconds: 1),
+      //     action: SnackBarAction(
+      //         label: "Dismiss",
+      //         onPressed: () {
+      //           ScaffoldMessenger.of(context).clearSnackBars();
+      //         }),
+      //     backgroundColor: Colors.indigo,
+      //     content: Text("Added to Library")));
     } catch (error) {
       emit(FirestoreError(error.toString()));
       print("got error: $error");
@@ -67,7 +129,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
     }
   }
 
-  Future<void> fetchData() async {
+  Future<void> fetchData(value) async {
     emit(FirestoreLoading());
 
     try {
@@ -83,7 +145,7 @@ class FirestoreCubit extends Cubit<FirestoreState> {
       if (docSnapshot.exists) {
         // print("snapshot is exist");
         final data = docSnapshot.data() as Map<String, dynamic>;
-        final bookLibraries = data['flutter'];
+        final bookLibraries = data[value];
         // print(bookLibraries);
         if (bookLibraries != null) {
           final bookLibrariesList =
@@ -130,13 +192,15 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
       emit(const FirestoreSuccess("Successfully deleted"));
 
-      fetchData();
+      // fetchData();
     } catch (error) {
       emit(FirestoreError(error.toString()));
     }
   }
 
-  Future<void> deleteBook(String isbn, imageLinks, categories, title) async {
+  Future<void> deleteBook(
+      String isbn, imageLinks, categories, title, value) async {
+    final String tableName = "Reading";
     try {
       final user = authState.user;
       if (user == null) {
@@ -147,11 +211,47 @@ class FirestoreCubit extends Cubit<FirestoreState> {
       DocumentSnapshot doc = await docRef.get();
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
-        final books = data["flutter"] as List<dynamic>;
-        final updatedBooks = List<Map<String, dynamic>>.from(books)
-          ..removeWhere((book) => book['ISBN'] == isbn);
-        await docRef.update({"flutter": updatedBooks});
-        fetchData();
+
+        switch (value) {
+          case 0:
+            final books = data["Reading"] as List<dynamic>;
+            final updatedBooks = List<Map<String, dynamic>>.from(books)
+              ..removeWhere((book) => book['ISBN'] == isbn);
+            await docRef.update({"Reading": updatedBooks});
+            print("deleting from Reading");
+            tableName == "Reading";
+            break;
+          case 1:
+            final books = data["Wishlist"] as List<dynamic>;
+            final updatedBooks = List<Map<String, dynamic>>.from(books)
+              ..removeWhere((book) => book['ISBN'] == isbn);
+            await docRef.update({"Wishlist": updatedBooks});
+            print("deleting from Wishlist");
+            tableName == "Wishlist";
+
+            break;
+          case 2:
+            final books = data["Completed"] as List<dynamic>;
+            final updatedBooks = List<Map<String, dynamic>>.from(books)
+              ..removeWhere((book) => book['ISBN'] == isbn);
+            await docRef.update({"Completed": updatedBooks});
+            print("deleting from Completed");
+            tableName == "Completed";
+
+            break;
+          case 3:
+            final books = data["Favorites"] as List<dynamic>;
+            final updatedBooks = List<Map<String, dynamic>>.from(books)
+              ..removeWhere((book) => book['ISBN'] == isbn);
+            await docRef.update({"Favorites": updatedBooks});
+            print("deleting from Favorites");
+            tableName == "Favorites";
+
+            break;
+          default:
+        }
+
+        fetchData(tableName);
       } else {
         emit(const FirestoreError("Data not exist"));
       }

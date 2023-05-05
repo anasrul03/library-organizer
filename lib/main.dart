@@ -14,12 +14,15 @@ import 'package:lib_org/Pages/Home_Page.dart';
 import 'package:lib_org/Services/ApiStates/ApiListStates.dart';
 import 'package:lib_org/Services/Firebase_Auth.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
+import 'package:lib_org/cubit/firestore_cubit.dart';
 import 'package:lib_org/cubit/signup_cubit.dart';
+import 'package:lib_org/cubit/user_libraries_cubit.dart';
 import 'package:lib_org/firebase_options.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'Pages/prefaceLoad.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -100,6 +103,14 @@ class _MyAppState extends State<MyApp> {
               return BookDetailsCubit();
             },
           ),
+          BlocProvider(
+            create: (BuildContext context) {
+              return FirestoreCubit(context.read<AuthRepo>().state);
+            },
+          ),
+          BlocProvider(create: (BuildContext context) {
+            return UserLibrariesCubit(context.read<AuthRepo>().state);
+          })
         ],
         child: MaterialApp(
             debugShowCheckedModeBanner: false,
@@ -109,7 +120,7 @@ class _MyAppState extends State<MyApp> {
                 ? ThemeMode.dark
                 : ThemeMode.light,
             title: 'Flutter Demo',
-            home: HomePage()),
+            home: MyHomePage(title: "bega n anas")),
       ),
     );
   }
@@ -154,7 +165,9 @@ class _MyHomePageState extends State<MyHomePage> {
             print("Re-directing to AuthPage");
             double width = MediaQuery.of(context).size.width;
             print("the width is $width");
-            return Authentication();
+            return Authentication(
+              firstTime: true,
+            );
           }
         },
       ),

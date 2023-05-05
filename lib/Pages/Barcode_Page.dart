@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:loading_animations/loading_animations.dart';
 import 'BookDetails_Page.dart';
@@ -63,27 +64,25 @@ class BarcodePageState extends State<BarcodePage> {
         ),
       ).then((value) {
         if (value != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Text('Error: Please scan again or input ISBN no.'),
-              ),
-              backgroundColor: Colors.indigo,
-            ),
-          );
+          Fluttertoast.showToast(
+              msg: "Error: Please scan again or input ISBN no.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 1,
+              // backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0);
         }
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Padding(
-            padding: EdgeInsets.all(12.0),
-            child: Text('Error: Please scan again or input ISBN no.'),
-          ),
-          backgroundColor: Colors.indigo,
-        ),
-      );
+      Fluttertoast.showToast(
+          msg: "Error: Please scan again or input ISBN no.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 1,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
     }
   }
 
