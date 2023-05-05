@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lib_org/Components/RackSelectableButtonList.dart';
 import 'package:lib_org/cubit/auth_cubit.dart';
 import 'package:lib_org/cubit/auth_state.dart';
+import 'package:lib_org/main.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../cubit/firestore_cubit.dart';
@@ -54,10 +55,10 @@ class LibraryPageState extends State<LibraryPage>
                       _tabController, // Assign the TabController to the TabBar
                 ),
               ),
-              floatingActionButton: FloatingActionButton(onPressed: () {
-                print(_tabController!
-                    .index); // Get the value of the current selected tab
-              }),
+              // floatingActionButton: FloatingActionButton(onPressed: () {
+              //   print(_tabController!
+              //       .index); // Get the value of the current selected tab
+              // }),
               body: TabBarView(
                 controller: _tabController,
                 children: const [
@@ -115,10 +116,12 @@ class _BookCardState extends State<BookCard> {
                   child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SvgPicture.asset(
-                    assetName,
-                    width: 200,
-                    height: 200,
+                  SizedBox(
+                    child: SvgPicture.asset(
+                      assetName,
+                      width: 200,
+                      height: 200,
+                    ),
                   ),
                   const SizedBox(
                     height: 30,
@@ -141,114 +144,132 @@ class _BookCardState extends State<BookCard> {
                 ],
               ));
             } else if (state is FirestoreFetchSuccess) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const RackSelectableButtonList(),
-                  Expanded(
-                    child: GridView.builder(
-                      itemCount: state.bookLibraries.myBooks.length,
-                      itemBuilder: (context, index) {
-                        final book = state.bookLibraries.myBooks[index];
-                        final isbn = book['ISBN'];
-                        final categories = book['categories'];
-                        final imageLinks = book['imageLinks'];
-                        final title = book['title'];
+              return Expanded(
+                child: GridView.builder(
+                  itemCount: state.bookLibraries.myBooks.length,
+                  itemBuilder: (context, index) {
+                    final book = state.bookLibraries.myBooks[index];
+                    final isbn = book['ISBN'];
+                    final categories = book['categories'];
+                    final imageLinks = book['imageLinks'];
+                    final title = book['title'];
 
-                        return Card(
-                          child: Stack(
-                            children: [
-                              CachedNetworkImage(
-                                  height: cardHeight,
-                                  imageUrl: imageLinks,
-                                  fit: BoxFit.cover),
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.bottomCenter,
-                                    end: Alignment.topCenter,
-                                    colors: [
-                                      Colors.black.withOpacity(0.9),
-                                      Colors.black.withOpacity(0.6),
-                                      Colors.black.withOpacity(0.3),
-                                      Colors.transparent,
-                                    ],
-                                    stops: const [0.0, 0.4, 0.7, 1.0],
-                                  ),
-                                ),
-                                // Other properties of the container
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  final String value = "Reading";
-                                  print(widget.currentTab);
-                                  context.read<FirestoreCubit>().deleteBook(
-                                      isbn,
-                                      imageLinks,
-                                      categories,
-                                      title,
-                                      widget.currentTab);
-                                  switch (widget.currentTab) {
-                                    case 0:
-                                      setState(() {
-                                        value == "Reading";
-                                      });
-                                      break;
-                                    case 1:
-                                      setState(() {
-                                        value == "Wishlist";
-                                      });
-                                      break;
-                                    case 2:
-                                      setState(() {
-                                        value == "Completed";
-                                      });
-                                      break;
-                                    case 3:
-                                      setState(() {
-                                        value == "Favorites";
-                                      });
-                                      break;
-                                    default:
-                                  }
-                                  print("Fetching data from $value");
-                                },
-                                icon: const Icon(
-                                  Icons.remove_circle,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 0,
-                                left: 2,
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  width: cardWidth,
-                                  height: 58,
-                                  child: Text(
-                                    title,
-                                    textAlign: TextAlign.left,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            ],
+                    return InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                BookDetailsPage(isbn: book['ISBN']),
                           ),
-                        );
+                        ).then((value) {
+                          if (value != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Text(value),
+                                ),
+                                backgroundColor: Colors.indigo,
+                              ),
+                            );
+                          }
+                        });
                       },
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: columnNum,
-                        childAspectRatio: 0.6,
-                        mainAxisSpacing: 0,
-                        crossAxisSpacing: 0,
+                      child: Card(
+                        child: Stack(
+                          children: [
+                            CachedNetworkImage(
+                                height: cardHeight,
+                                imageUrl: imageLinks,
+                                fit: BoxFit.cover),
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    Colors.black.withOpacity(0.9),
+                                    Colors.black.withOpacity(0.6),
+                                    Colors.black.withOpacity(0.3),
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0.0, 0.4, 0.7, 1.0],
+                                ),
+                              ),
+                              // Other properties of the container
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                final String value = "Reading";
+                                print(widget.currentTab);
+                                context.read<FirestoreCubit>().deleteBook(
+                                    isbn,
+                                    imageLinks,
+                                    categories,
+                                    title,
+                                    widget.currentTab);
+                                switch (widget.currentTab) {
+                                  case 0:
+                                    setState(() {
+                                      value == "Reading";
+                                    });
+                                    break;
+                                  case 1:
+                                    setState(() {
+                                      value == "Wishlist";
+                                    });
+                                    break;
+                                  case 2:
+                                    setState(() {
+                                      value == "Completed";
+                                    });
+                                    break;
+                                  case 3:
+                                    setState(() {
+                                      value == "Favorites";
+                                    });
+                                    break;
+                                  default:
+                                }
+                                print("Fetching data from $value");
+                              },
+                              icon: const Icon(
+                                Icons.remove_circle,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              left: 2,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                width: cardWidth,
+                                height: 58,
+                                child: Text(
+                                  title,
+                                  textAlign: TextAlign.left,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                  )
-                ],
+                    );
+                  },
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount:
+                        context.watch<ThemeProvider>().isGridEven ? 2 : 3,
+                    childAspectRatio: 0.6,
+                    mainAxisSpacing: 0,
+                    crossAxisSpacing: 0,
+                  ),
+                ),
               );
             } else {
               return const SizedBox.shrink();

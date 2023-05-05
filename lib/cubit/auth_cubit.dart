@@ -3,6 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../main.dart';
 import 'auth_state.dart';
@@ -36,10 +37,19 @@ class AuthRepo extends Cubit<AuthState> {
     try {
       final createUser = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Successfully Registered! as ${email}"),
-        backgroundColor: Colors.green,
-      ));
+      Fluttertoast.showToast(
+          msg: "Successfully Registered! as ${email}",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   content: Text("Successfully Registered! as ${email}"),
+      //   backgroundColor: Colors.green,
+      // ));
       // emit(createUser.user?.email);
     } on FirebaseAuthException catch (e) {
       print("Error : $e");
@@ -49,17 +59,33 @@ class AuthRepo extends Cubit<AuthState> {
       } else if (e.code == 'email-already-in-use') {
         print('The account already exists for that email.');
       }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Firebase Error!: $e"),
-        backgroundColor: Colors.red,
-      ));
+
+      Fluttertoast.showToast(
+          msg: "Firebase Error!: $e",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   content: Text("Firebase Error!: $e"),
+      //   backgroundColor: Colors.red,
+      // ));
     } catch (e) {
       print("Error : $e");
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Error Catch! >> $e"),
-        backgroundColor: Colors.red,
-      ));
+      Fluttertoast.showToast(
+          msg: "Error Catch! >> $e",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   content: Text("Error Catch! >> $e"),
+      //   backgroundColor: Colors.red,
+      // ));
     }
   }
 
@@ -71,21 +97,36 @@ class AuthRepo extends Cubit<AuthState> {
       );
       emit(state.copyWith(user: user.user));
       print(user);
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        showCloseIcon: true,
-        backgroundColor: Colors.green,
-        content: Text("Successfully Logged as " + state.email),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(
+          msg: "Successfully Logged as ${state.email}",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   showCloseIcon: true,
+      //   backgroundColor: Colors.green,
+      //   content: Text("Successfully Logged as " + state.email),
+      //   duration: Duration(seconds: 1),
+      // ));
     } catch (e) {
       print("ERROR: $e");
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        showCloseIcon: true,
-        backgroundColor: Colors.red,
-        content: Text("Please input a correct email and password !!"),
-        duration: Duration(seconds: 3),
-      ));
+      Fluttertoast.showToast(
+          msg: "Please input a correct email and password !!",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   showCloseIcon: true,
+      //   backgroundColor: Colors.red,
+      //   content: Text("Please input a correct email and password !!"),
+      //   duration: Duration(seconds: 3),
+      // ));
     }
     loaded = false;
     navigatorKey.currentState!.popUntil((route) => route.isFirst);
@@ -96,26 +137,50 @@ class AuthRepo extends Cubit<AuthState> {
       GoogleSignIn().disconnect();
       await FirebaseAuth.instance.signOut();
       emit(state.copyWith(email: "", password: "", status: AuthStatus.initial));
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        showCloseIcon: true,
-        duration: Duration(seconds: 1),
-        content: Text("Logged out"),
-        backgroundColor: Colors.grey,
-      ));
+      Fluttertoast.showToast(
+          msg: "Logged out",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   showCloseIcon: true,
+      //   duration: Duration(seconds: 1),
+      //   content: Text("Logged out"),
+      //   backgroundColor: Colors.grey,
+      // ));
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        showCloseIcon: true,
-        duration: Duration(seconds: 6),
-        content: Text("Firebase Error: $e"),
-        backgroundColor: Colors.red,
-      ));
+      Fluttertoast.showToast(
+          msg: "Error Catch! >> $e",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   showCloseIcon: true,
+      //   duration: Duration(seconds: 6),
+      //   content: Text("Firebase Error: $e"),
+      //   backgroundColor: Colors.red,
+      // ));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        showCloseIcon: true,
-        duration: Duration(seconds: 6),
-        content: Text("Error: $e"),
-        backgroundColor: Colors.red,
-      ));
+      Fluttertoast.showToast(
+          msg: "Error Catch! >> $e",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   showCloseIcon: true,
+      //   duration: Duration(seconds: 6),
+      //   content: Text("Error: $e"),
+      //   backgroundColor: Colors.red,
+      // ));
     }
   }
 
@@ -128,15 +193,31 @@ class AuthRepo extends Cubit<AuthState> {
       //   content: Text("Logged Anonymously"),
       //   duration: Duration(seconds: 1),
       // ));
+      Fluttertoast.showToast(
+          msg: "Sign in as Anon",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
       emit(state.copyWith(user: user.user));
     } catch (e) {
       print("ERROR: $e");
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        showCloseIcon: true,
-        backgroundColor: Colors.red,
-        content: Text("Cannot Log! Anon : $e"),
-        duration: Duration(seconds: 3),
-      ));
+      Fluttertoast.showToast(
+          msg: "Cannot Log! Anon : $e",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //   showCloseIcon: true,
+      //   backgroundColor: Colors.red,
+      //   content: Text("Cannot Log! Anon : $e"),
+      //   duration: Duration(seconds: 3),
+      // ));
     }
   }
 

@@ -43,35 +43,38 @@ class _LibraryRackPageState extends State<LibraryRackPage> {
                 ),
               );
             } else if (state is UserLibrariesError) {
-              return Center(
+              return Scaffold(
+                body: Center(
                   child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SvgPicture.asset(
-                    assetName,
-                    width: 200,
-                    height: 200,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        assetName,
+                        width: 200,
+                        height: 200,
+                      ),
+                      const SizedBox(
+                        height: 30,
+                      ),
+                      Text(
+                        "Racks are not available on this version",
+                        style: title,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      SizedBox(
+                        width: 300,
+                        child: Text(
+                          "Catch up with us and keep updated about our app, Racks will be available in future versions to sort your books :)",
+                          style: subtitle,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  Text(
-                    "There is no book added yet",
-                    style: title,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  SizedBox(
-                    width: 300,
-                    child: Text(
-                      "You can add book in library directly from details page",
-                      style: subtitle,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ));
+                ),
+              );
             } else if (state is UserLibrariesFetchSuccess) {
               return Scaffold(
                 appBar: AppBar(

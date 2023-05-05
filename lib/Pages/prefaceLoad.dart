@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lib_org/Firebase_Auth/Login_Page.dart';
 import 'package:lib_org/Services/Firebase_Auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingPage extends StatefulWidget {
-  const OnboardingPage({Key? key}) : super(key: key);
+  final bool isDone;
+  OnboardingPage({Key? key, required this.isDone}) : super(key: key);
 
   @override
   _OnboardingPageState createState() => _OnboardingPageState();
@@ -13,6 +15,17 @@ class OnboardingPage extends StatefulWidget {
 class _OnboardingPageState extends State<OnboardingPage> {
   final PageController _pageController = PageController(initialPage: 0);
   int _currentPage = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // Store a flag indicating that the user has completed the onboarding process
+    // SharedPreferences.getInstance().then((prefs) {
+    //   prefs.setBool('hasOnboarded', true);
+    // });
+    widget.isDone == false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +70,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
               onPressed: () {
                 if (_currentPage == 2) {
                   // Handle last page button press
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => Authentication()));
+                  Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => LoginPage()));
                 } else {
                   _pageController.nextPage(
                     duration: const Duration(milliseconds: 500),

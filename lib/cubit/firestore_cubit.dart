@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lib_org/Pages/Home_Page.dart';
 import 'package:lib_org/cubit/auth_state.dart';
 import '../Components/Categories.dart';
@@ -19,6 +20,53 @@ class FirestoreCubit extends Cubit<FirestoreState> {
   FirestoreCubit(this.authState) : super(FirestoreInitial());
 
   final db = FirebaseFirestore.instance;
+
+  Future<void> updateDisplayName(BuildContext context, updatedName) async {
+    try {
+      final user = authState.user;
+      // print(user);
+      if (user == null) {
+        emit(const FirestoreError("User not logged in"));
+        return;
+      }
+      // Create a new document in the "bookLibraries" collection with a user email
+      final docRef = db.collection("userInfo").doc(user.email);
+      DocumentSnapshot doc = await docRef.get();
+
+      final userDetails = {
+        'displayName': updatedName,
+      };
+      if (doc.exists) {
+        print("Running update");
+        await docRef.update({
+          "userInfo": FieldValue.arrayUnion([userDetails['displayName']])
+        });
+        print("Changed user name to ${userDetails['displayName']}");
+      } else {
+        print("Running update");
+
+        await docRef.set({
+          "userInfo": [userDetails['displayName']]
+        });
+        print("Changed user name to ${userDetails['displayName']}");
+      }
+
+      // fetchData();
+
+      Fluttertoast.showToast(
+          msg: "Changed name to $updatedName.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    } catch (error) {
+      emit(FirestoreError(error.toString()));
+      print("got error: $error");
+      // snackBar(error.toString(), Colors.red, Colors.white, context);
+    }
+  }
 
   Future<void> addBook(BuildContext context, isbn, imageLinks, categories,
       title, categoriesList) async {
@@ -57,14 +105,23 @@ class FirestoreCubit extends Cubit<FirestoreState> {
 
       // fetchData();
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          action: SnackBarAction(
-              label: "Dismiss",
-              onPressed: () {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-              }),
-          backgroundColor: Colors.indigo,
-          content: Text("Added to Library")));
+      Fluttertoast.showToast(
+          msg: "Added to Library",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 2,
+          // backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //     duration: Duration(seconds: 1),
+      //     action: SnackBarAction(
+      //         label: "Dismiss",
+      //         onPressed: () {
+      //           ScaffoldMessenger.of(context).clearSnackBars();
+      //         }),
+      //     backgroundColor: Colors.indigo,
+      //     content: Text("Added to Library")));
     } catch (error) {
       emit(FirestoreError(error.toString()));
       print("got error: $error");

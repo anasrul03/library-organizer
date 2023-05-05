@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:lib_org/cubit/auth_state.dart';
@@ -19,6 +20,7 @@ import '../cubit/auth_cubit.dart';
 
 class LoginPage extends StatefulWidget {
   VoidCallback? toSignUpPage;
+
   LoginPage({super.key, this.toSignUpPage});
 
   @override
@@ -82,26 +84,23 @@ class _LoginPageState extends State<LoginPage> {
                   // Other properties of the container
                 ),
                 Positioned(
-                  top: 130,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Let's Start!",
-                          textAlign: TextAlign.left,
-                          style: title,
-                        ),
-                        SizedBox(
-                          width: 300,
-                          child: Text(
-                            "Manage your books perfectly without hassle",
-                            textAlign: TextAlign.left,
-                            style: subtitle,
-                          ),
-                        ),
-                      ],
+                  top: 145,
+                  left: 20,
+                  child: Text(
+                    "Let's Start!",
+                    textAlign: TextAlign.left,
+                    style: title,
+                  ),
+                ),
+                Positioned(
+                  top: 205,
+                  left: 20,
+                  child: SizedBox(
+                    width: 300,
+                    child: Text(
+                      "Manage your books perfectly without hassle",
+                      textAlign: TextAlign.left,
+                      style: subtitle,
                     ),
                   ),
                 ),
@@ -111,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Container(
                     padding: EdgeInsets.fromLTRB(19, 0, 35, 0),
                     child: GlassmorphicContainer(
-                      width: 380,
+                      width: 350,
                       height: 400,
                       borderRadius: 9,
                       blur: 20,
@@ -145,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Container(
                     margin: EdgeInsets.symmetric(horizontal: 10),
                     padding: EdgeInsets.all(20),
-                    width: 400,
+                    width: 368,
                     child: Material(
                       // elevation: 10.0,
                       borderRadius: BorderRadius.circular(12.0),
@@ -168,7 +167,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Container(
                     margin: EdgeInsets.symmetric(horizontal: 10),
                     padding: EdgeInsets.all(20),
-                    width: 400,
+                    width: 368,
                     child: Material(
                       // elevation: 10.0,
                       borderRadius: BorderRadius.circular(12.0),
@@ -198,7 +197,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 Positioned(
                     top: 500,
-                    left: 30,
+                    left: 6,
                     child: Container(
                       margin: EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
@@ -220,6 +219,7 @@ class _LoginPageState extends State<LoginPage> {
                                     },
                                     child: Text("Login"),
                                     style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.indigo,
                                       //border width and color
                                       elevation: 2, //elevation of button
                                       shape: RoundedRectangleBorder(
@@ -235,6 +235,7 @@ class _LoginPageState extends State<LoginPage> {
                                 : ElevatedButton(
                                     autofocus: true,
                                     onPressed: () {
+                                      print("pressed");
                                       context.read<AuthRepo>().anon(context);
                                     },
                                     child: Text("Anonymous"),
@@ -254,8 +255,9 @@ class _LoginPageState extends State<LoginPage> {
                               child: SignInButton(
                                 shape: RoundedRectangleBorder(
                                     //to set border radius to button
-                                    borderRadius: BorderRadius.circular(518)),
+                                    borderRadius: BorderRadius.circular(18)),
                                 Buttons.Google,
+                                padding: EdgeInsets.only(left: 40),
                                 onPressed: () async {
                                   setState(() {
                                     isLoading ==
@@ -267,21 +269,38 @@ class _LoginPageState extends State<LoginPage> {
                                         await context
                                             .read<AuthRepo>()
                                             .signInWithGoogle();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                            backgroundColor: Colors.green,
-                                            content: Text(
-                                                "Logged using google ${userCredential.user?.displayName}"),
-                                            duration: Duration(seconds: 1)));
+                                    Fluttertoast.showToast(
+                                        msg:
+                                            "Logged using google ${userCredential.user?.displayName}",
+                                        toastLength: Toast.LENGTH_LONG,
+                                        gravity: ToastGravity.TOP,
+                                        timeInSecForIosWeb: 2,
+                                        // backgroundColor: Colors.red,
+                                        textColor: Colors.white,
+                                        fontSize: 16.0);
+                                    // ScaffoldMessenger.of(context).showSnackBar(
+                                    //     SnackBar(
+                                    //         backgroundColor: Colors.green,
+                                    //         content: Text(
+                                    //             "Logged using google ${userCredential.user?.displayName}"),
+                                    //         duration: Duration(seconds: 1)));
                                     // Successfully signed in
                                   } catch (e) {
                                     print("YOUR ERROR IS $e");
                                     // Error signing in
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                            backgroundColor: Colors.black,
-                                            content: Text("Cancelled : $e"),
-                                            duration: Duration(seconds: 5)));
+                                    Fluttertoast.showToast(
+                                        msg: "Cancelled : $e",
+                                        toastLength: Toast.LENGTH_LONG,
+                                        gravity: ToastGravity.TOP,
+                                        timeInSecForIosWeb: 2,
+                                        // backgroundColor: Colors.red,
+                                        textColor: Colors.white,
+                                        fontSize: 16.0);
+                                    // ScaffoldMessenger.of(context).showSnackBar(
+                                    //     SnackBar(
+                                    //         backgroundColor: Colors.black,
+                                    //         content: Text("Cancelled : $e"),
+                                    //         duration: Duration(seconds: 5)));
                                     // Successfully
                                   }
                                 },
@@ -291,13 +310,13 @@ class _LoginPageState extends State<LoginPage> {
                     )),
                 Positioned(
                   top: 450,
-                  right: 28,
+                  right: 40,
                   child: RichText(
                     text: TextSpan(
                         text: "No Account? ",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 18,
+                          fontSize: 15,
                         ),
                         children: [
                           TextSpan(
@@ -311,7 +330,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 Positioned(
-                  top: 770,
+                  top: 718,
                   left: 100,
                   child: Container(
                     margin: EdgeInsets.symmetric(horizontal: 10),
@@ -325,7 +344,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 Positioned(
-                  top: 810,
+                  top: 750,
                   left: 165,
                   child: Container(
                     margin: EdgeInsets.symmetric(horizontal: 6),
